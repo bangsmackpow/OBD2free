@@ -324,7 +324,7 @@ class DataLoggerClass {
       // Upload via presigned URL (direct to R2)
       const response = await fetch(presignedUrl, {
         method: 'PUT',
-        body: require('react-native-fs').readFile(filepath, 'base64'),
+        body: await RNFS.readFile(filepath, 'base64'),
         headers: {
           'Content-Type': 'text/csv',
           'Content-Length': fileSize.toString(),

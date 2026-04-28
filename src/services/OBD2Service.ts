@@ -130,11 +130,11 @@ class OBD2ServiceClass {
 
       // Parse based on PID
       switch (pid) {
-        case OBD2PID.ENGINE_RPM:
-          // A*256 + B, then /4
+        case OBD2PID.ENGINE_RPM: {
           const a = parseInt(payload[0], 16);
           const b = parseInt(payload[1], 16);
           return ((a * 256) + b) / 4;
+        }
 
         case OBD2PID.VEHICLE_SPEED:
           return parseInt(payload[0], 16);
