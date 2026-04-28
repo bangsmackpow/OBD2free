@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+
+# Metro
+.metro-health-check*
+
+# Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# Android
+android/.gradle/
+android/.idea/
+android/capabilities/
+android/build/
+android/local.properties
+android/gradle-app.setting
+
+# iOS
+ios/build/
+ios/Pods/
+ios/*.xcworkspace
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+yarn-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# Testing
+coverage/
+
+# Cache
+.expo/
+.expo-shared/
+
+# Temporary
+tmp/
+temp/
+
+# Build outputs
+dist/
+lib/
+
+# MMKV storage files
+*.mmkv
+
+# Cloudflare Workers
+.wrangler/
+
+# OBD2 logs
+logs/*.csv
+logs/*.csv.gz

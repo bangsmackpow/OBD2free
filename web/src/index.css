@@ -1,0 +1,27 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+:root {
+  --neon-blue: #00D4FF;
+  --neon-green: #39FF14;
+  --neon-pink: #FF10F0;
+  --neon-purple: #BC13FE;
+  --dark-bg: #0A0A0A;
+  --dark-card: #141414;
+}
+
+body {
+  background-color: var(--dark-bg);
+  color: white;
+  font-family: 'Inter', sans-serif;
+}
+
+.gauge-value {
+  font-family: 'JetBrains Mono', monospace;
+  text-shadow: 0 0 20px currentColor;
+}
+
+.neon-text {
+  text-shadow: 0 0 10px currentColor;
+}
