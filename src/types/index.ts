@@ -1,59 +1,59 @@
 // OBD2 Parameter IDs (PIDs)
 export enum OBD2PID {
   // Standard PIDs (Mode 01)
-  ENGINE_LOAD = '04',
-  COOLANT_TEMP = '05',
-  STFT_BANK1 = '06',
-  LTFT_BANK1 = '07',
-  INTAKE_MAP = '0B',
-  ENGINE_RPM = '0C',
-  VEHICLE_SPEED = '0D',
-  TIMING_ADVANCE = '0E',
-  INTAKE_AIR_TEMP = '0F',
-  MAF_AIR_FLOW = '10',
-  THROTTLE_POS = '11',
-  OBD_STANDARD = '1C',
-  DISTANCE_MIL = '21',
-  FUEL_TANK_LEVEL = '2F',
-  CONTROL_MODULE_VOLTAGE = '42',
-  AMBIENT_AIR_TEMP = '46',
+  ENGINE_LOAD = "04",
+  COOLANT_TEMP = "05",
+  STFT_BANK1 = "06",
+  LTFT_BANK1 = "07",
+  INTAKE_MAP = "0B",
+  ENGINE_RPM = "0C",
+  VEHICLE_SPEED = "0D",
+  TIMING_ADVANCE = "0E",
+  INTAKE_AIR_TEMP = "0F",
+  MAF_AIR_FLOW = "10",
+  THROTTLE_POS = "11",
+  OBD_STANDARD = "1C",
+  DISTANCE_MIL = "21",
+  FUEL_TANK_LEVEL = "2F",
+  CONTROL_MODULE_VOLTAGE = "42",
+  AMBIENT_AIR_TEMP = "46",
 
   // Manufacturer-specific (Mode 22)
-  MAZDA_BOOST_PRESSURE = '56', // Mazda-specific
-  MAZDA_KNOCK_SENSOR = '2300', // Enhanced mode
-  BMW_BATTERY_REG_STATUS = '2E', // F10 specific
+  MAZDA_BOOST_PRESSURE = "56", // Mazda-specific
+  MAZDA_KNOCK_SENSOR = "2300", // Enhanced mode
+  BMW_BATTERY_REG_STATUS = "2E", // F10 specific
 }
 
 // ELM327 AT Commands
 export enum ATCommand {
-  RESET = 'AT Z',
-  PROTOCOL_AUTO = 'AT SP 0',
-  ALLOW_LONG_MESSAGES = 'AT AL',
-  HEADERS_ON = 'AT H1',
-  READ_BATTERY_VOLTAGE = 'AT RV',
-  DESCRIBE_PROTOCOL = 'AT DP',
-  PRINT_VERSION = 'AT I',
-  ADAPTIVE_TIMING = 'AT AT1',
-  SET_TIMEOUT = 'AT ST 4A', // 74ms timeout
+  RESET = "AT Z",
+  PROTOCOL_AUTO = "AT SP 0",
+  ALLOW_LONG_MESSAGES = "AT AL",
+  HEADERS_ON = "AT H1",
+  READ_BATTERY_VOLTAGE = "AT RV",
+  DESCRIBE_PROTOCOL = "AT DP",
+  PRINT_VERSION = "AT I",
+  ADAPTIVE_TIMING = "AT AT1",
+  SET_TIMEOUT = "AT ST 4A", // 74ms timeout
 }
 
 // OBD2 Modes
 export enum OBD2Mode {
-  CURRENT_DATA = '01',
-  FREEZE_FRAME = '02',
-  DTC = '03',
-  CLEAR_DTC = '04',
-  TEST_RESULTS = '05',
-  TEST_RESULTS_2006 = '06',
+  CURRENT_DATA = "01",
+  FREEZE_FRAME = "02",
+  DTC = "03",
+  CLEAR_DTC = "04",
+  TEST_RESULTS = "05",
+  TEST_RESULTS_2006 = "06",
   // Enhanced/Mode 22 for manufacturer-specific
-  ENHANCED = '22',
+  ENHANCED = "22",
 }
 
 // OBD2 Response Modes (add 0x40 to request mode)
 export enum OBD2ResponseMode {
-  CURRENT_DATA = '41',
-  DTC = '43',
-  ENHANCED = '62',
+  CURRENT_DATA = "41",
+  DTC = "43",
+  ENHANCED = "62",
 }
 
 // PID Support Bits (PID 0x00)
@@ -95,7 +95,7 @@ export interface EngineData {
 export interface DTC {
   code: string;
   description?: string;
-  status: 'active' | 'pending' | 'historical';
+  status: "active" | "pending" | "historical";
 }
 
 // Vehicle Profile
@@ -146,19 +146,19 @@ export interface PerformanceMetrics {
 }
 
 // Dashboard Widget Configuration
-export type WidgetType = 'gauge' | 'graph' | 'text' | 'table' | 'digital';
+export type WidgetType = "gauge" | "graph" | "text" | "table" | "digital";
 
 export interface WidgetConfig {
   id: string;
   type: WidgetType;
-  position: {x: number; y: number; w: number; h: number};
+  position: { x: number; y: number; w: number; h: number };
   dataSource: {
     pid: OBD2PID;
     label: string;
     unit: string;
     min: number;
     max: number;
-    threshold?: {value: number; color: string}[];
+    threshold?: { value: number; color: string }[];
   };
   appearance?: {
     color?: string;
@@ -179,20 +179,20 @@ export interface BLEDevice {
 
 // Connection State
 export enum ConnectionState {
-  DISCONNECTED = 'disconnected',
-  SCANNING = 'scanning',
-  CONNECTING = 'connecting',
-  CONNECTED = 'connected',
-  DISCONNECTING = 'disconnecting',
-  ERROR = 'error',
+  DISCONNECTED = "disconnected",
+  SCANNING = "scanning",
+  CONNECTING = "connecting",
+  CONNECTED = "connected",
+  DISCONNECTING = "disconnecting",
+  ERROR = "error",
 }
 
 // Premium Status
 export enum PremiumStatus {
-  FREE = 'free',
-  PREMIUM = 'premium',
-  LIFETIME = 'lifetime',
-  ENTERPRISE = 'enterprise',
+  FREE = "free",
+  PREMIUM = "premium",
+  LIFETIME = "lifetime",
+  ENTERPRISE = "enterprise",
 }
 
 // User Profile

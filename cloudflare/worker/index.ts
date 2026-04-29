@@ -1,7 +1,7 @@
-import {Context} from './context';
-import {handleSessions} from './routes/sessions';
-import {handleUpload} from './routes/upload';
-import {handleAuth} from './routes/auth';
+import { Context } from "./context";
+import { handleSessions } from "./routes/sessions";
+import { handleUpload } from "./routes/upload";
+import { handleAuth } from "./routes/auth";
 
 export interface Env {
   LOGS_BUCKET: R2Bucket;
@@ -10,20 +10,24 @@ export interface Env {
 }
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(
+    request: Request,
+    env: Env,
+    _ctx: ExecutionContext,
+  ): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
 
     // CORS headers
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type,Authorization",
     };
 
     // Handle preflight
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {headers: corsHeaders});
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
     }
 
     try {
@@ -31,26 +35,26 @@ export default {
       const context = new Context(env);
 
       // Routes
-      if (path === '/api/sessions' && request.method === 'GET') {
+      if (path === "/api/sessions" && request.method === "GET") {
         return handleSessions(request, context);
       }
-      if (path === '/api/sessions' && request.method === 'POST') {
+      if (path === "/api/sessions" && request.method === "POST") {
         return handleSessions(request, context);
       }
-      if (path.startsWith('/api/sessions/') && request.method === 'GET') {
+      if (path.startsWith("/api/sessions/") && request.method === "GET") {
         return handleSessions(request, context);
       }
-      if (path.startsWith('/api/upload') && request.method === 'POST') {
+      if (path.startsWith("/api/upload") && request.method === "POST") {
         return handleUpload(request, context);
       }
-      if (path === '/api/auth/token' && request.method === 'POST') {
+      if (path === "/api/auth/token" && request.method === "POST") {
         return handleAuth(request, context);
       }
 
-      return new Response('Not Found', {status: 404});
+      return new Response("Not Found", { status: 404 });
     } catch (error) {
-      console.error('Worker error:', error);
-      return new Response('Internal Server Error', {status: 500});
+      console.error("Worker error:", error);
+      return new Response("Internal Server Error", { status: 500 });
     }
   },
 };

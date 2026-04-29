@@ -1,10 +1,21 @@
-import React, {createContext, useContext, useState, useEffect, ReactNode} from 'react';
-import {DataLogger} from '../services/DataLogger';
-import {OBD2Service} from '../services/OBD2Service';
-import {BleService} from '../services/BleService';
-import {GPSService} from '../services/GPSService';
-import {User, Vehicle, LoggingSession, PremiumStatus, GPSPoint} from '../types';
-import {STORAGE_KEYS, PREMIUM_CONFIG} from '../constants';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { DataLogger } from "../services/DataLogger";
+import { OBD2Service } from "../services/OBD2Service";
+import { GPSService } from "../services/GPSService";
+import {
+  User,
+  Vehicle,
+  LoggingSession,
+  PremiumStatus,
+  GPSPoint,
+} from "../types";
+import { STORAGE_KEYS } from "../constants";
 
 interface SessionContextType {
   user: User | null;
@@ -28,9 +39,13 @@ interface SessionProviderProps {
   children: ReactNode;
 }
 
-export const SessionProvider: React.FC<SessionProviderProps> = ({children}) => {
+export const SessionProvider: React.FC<SessionProviderProps> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
-  const [currentSession, setCurrentSession] = useState<LoggingSession | null>(null);
+  const [currentSession, setCurrentSession] = useState<LoggingSession | null>(
+    null,
+  );
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [sessions, setSessions] = useState<LoggingSession[]>([]);
 
@@ -49,20 +64,20 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({children}) => {
     try {
       // In real app, this would restore from secure storage + API
       const defaultUser: User = {
-        id: 'user_001',
-        email: 'user@example.com',
+        id: "user_001",
+        email: "user@example.com",
         premiumStatus: PremiumStatus.FREE,
         vehicles: [],
       };
       setUser(defaultUser);
     } catch (error) {
-      console.error('Failed to load user data:', error);
+      console.error("Failed to load user data:", error);
     }
   };
 
   const loadVehicles = () => {
     // Load from storage
-    const saved = DataLogger['storage']?.getString('vehicles');
+    const saved = DataLogger["storage"]?.getString("vehicles");
     if (saved) {
       setVehicles(JSON.parse(saved));
     }
@@ -75,12 +90,12 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({children}) => {
 
   const startSession = async (vehicleId: string): Promise<string> => {
     if (!user) {
-      throw new Error('User not authenticated');
+      throw new Error("User not authenticated");
     }
 
     // Check connection
     if (!OBD2Service.getIsConnected()) {
-      throw new Error('OBD2 device not connected');
+      throw new Error("OBD2 device not connected");
     }
 
     // Start GPS tracking
@@ -122,17 +137,24 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({children}) => {
   const addVehicle = (vehicle: Vehicle) => {
     const updated = [...vehicles, vehicle];
     setVehicles(updated);
-    DataLogger['storage']?.set('vehicles', JSON.stringify(updated));
+    DataLogger["storage"]?.set("vehicles", JSON.stringify(updated));
   };
 
   const setPremiumStatus = (status: PremiumStatus, expiry?: number) => {
     if (!user) return;
-    const updatedUser = {...user, premiumStatus: status, premiumExpiry: expiry};
+    const updatedUser = {
+      ...user,
+      premiumStatus: status,
+      premiumExpiry: expiry,
+    };
     setUser(updatedUser);
     // Persist to storage
-    DataLogger['storage']?.set(STORAGE_KEYS.PREMIUM_STATUS, status);
+    DataLogger["storage"]?.set(STORAGE_KEYS.PREMIUM_STATUS, status);
     if (expiry) {
-      DataLogger['storage']?.set(STORAGE_KEYS.PREMIUM_EXPIRY, expiry.toString());
+      DataLogger["storage"]?.set(
+        STORAGE_KEYS.PREMIUM_EXPIRY,
+        expiry.toString(),
+      );
     }
   };
 
@@ -179,13 +201,15 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({children}) => {
     getSessionById,
   };
 
-  return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
+  return (
+    <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
+  );
 };
 
 export const useSession = (): SessionContextType => {
   const context = useContext(SessionContext);
   if (!context) {
-    throw new Error('useSession must be used within a SessionProvider');
+    throw new Error("useSession must be used within a SessionProvider");
   }
   return context;
 };

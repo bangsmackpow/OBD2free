@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -6,41 +6,50 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
-} from 'react-native';
-import {useBle} from '../contexts/BleContext';
-import {COLORS, SIZES} from '../constants';
-import {ConnectionState} from '../types';
+} from "react-native";
+import { useBle } from "../contexts/BleContext";
+import { COLORS, SIZES } from "../constants";
+import { ConnectionState } from "../types";
 
 const DashboardScreen: React.FC = () => {
-  const {state, engineData, scanForDevices, connectToDevice, devices, disconnect} = useBle();
+  const {
+    state,
+    engineData,
+    scanForDevices,
+    connectToDevice,
+    devices,
+    disconnect,
+  } = useBle();
 
   const renderStatus = () => {
     let statusColor: string = COLORS.text.secondary;
-    let statusText = 'Disconnected';
+    let statusText = "Disconnected";
 
     switch (state) {
       case ConnectionState.CONNECTED:
         statusColor = COLORS.neon.green;
-        statusText = 'Connected';
+        statusText = "Connected";
         break;
       case ConnectionState.CONNECTING:
         statusColor = COLORS.neon.yellow;
-        statusText = 'Connecting...';
+        statusText = "Connecting...";
         break;
       case ConnectionState.SCANNING:
         statusColor = COLORS.neon.blue;
-        statusText = 'Scanning...';
+        statusText = "Scanning...";
         break;
       case ConnectionState.ERROR:
         statusColor = COLORS.neon.red;
-        statusText = 'Error';
+        statusText = "Error";
         break;
     }
 
     return (
       <View style={styles.statusContainer}>
-        <View style={[styles.statusDot, {backgroundColor: statusColor}]} />
-        <Text style={[styles.statusText, {color: statusColor}]}>{statusText}</Text>
+        <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+        <Text style={[styles.statusText, { color: statusColor }]}>
+          {statusText}
+        </Text>
       </View>
     );
   };
@@ -49,7 +58,10 @@ const DashboardScreen: React.FC = () => {
     if (state !== ConnectionState.CONNECTED) return null;
 
     return (
-      <ScrollView style={styles.dataContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.dataContainer}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.gaugeRow}>
           <Gauge
             label="RPM"
@@ -104,9 +116,21 @@ const DashboardScreen: React.FC = () => {
         </View>
 
         <View style={styles.infoRow}>
-          <InfoCard label="STFT" value={`${engineData.stft.toFixed(1)}%`} color={COLORS.neon.green} />
-          <InfoCard label="LTFT" value={`${engineData.ltft.toFixed(1)}%`} color={COLORS.neon.yellow} />
-          <InfoCard label="Timing" value={`${engineData.timingAdvance.toFixed(1)}°`} color={COLORS.neon.blue} />
+          <InfoCard
+            label="STFT"
+            value={`${engineData.stft.toFixed(1)}%`}
+            color={COLORS.neon.green}
+          />
+          <InfoCard
+            label="LTFT"
+            value={`${engineData.ltft.toFixed(1)}%`}
+            color={COLORS.neon.yellow}
+          />
+          <InfoCard
+            label="Timing"
+            value={`${engineData.timingAdvance.toFixed(1)}°`}
+            color={COLORS.neon.blue}
+          />
         </View>
 
         <TouchableOpacity style={styles.disconnectButton} onPress={disconnect}>
@@ -121,25 +145,28 @@ const DashboardScreen: React.FC = () => {
       <Text style={styles.title}>OBD2 Scanner</Text>
       <Text style={styles.subtitle}>
         {state === ConnectionState.SCANNING
-          ? 'Searching for OBD2 adapters...'
-          : 'Tap to scan for your OBDLink LX'}
+          ? "Searching for OBD2 adapters..."
+          : "Tap to scan for your OBDLink LX"}
       </Text>
 
       <TouchableOpacity style={styles.scanButton} onPress={scanForDevices}>
         <Text style={styles.scanButtonText}>
-          {state === ConnectionState.SCANNING ? 'Scanning...' : 'Scan'}
+          {state === ConnectionState.SCANNING ? "Scanning..." : "Scan"}
         </Text>
       </TouchableOpacity>
 
       {devices.length > 0 && (
         <View style={styles.deviceList}>
           <Text style={styles.deviceListTitle}>Found Devices:</Text>
-          {devices.map(device => (
+          {devices.map((device) => (
             <TouchableOpacity
               key={device.id}
               style={styles.deviceItem}
-              onPress={() => connectToDevice(device.id)}>
-              <Text style={styles.deviceName}>{device.name || 'OBD2 Adapter'}</Text>
+              onPress={() => connectToDevice(device.id)}
+            >
+              <Text style={styles.deviceName}>
+                {device.name || "OBD2 Adapter"}
+              </Text>
               <Text style={styles.deviceId}>{device.id.slice(0, 20)}...</Text>
             </TouchableOpacity>
           ))}
@@ -151,7 +178,9 @@ const DashboardScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       {renderStatus()}
-      {state === ConnectionState.CONNECTED ? renderEngineData() : renderScanUI()}
+      {state === ConnectionState.CONNECTED
+        ? renderEngineData()
+        : renderScanUI()}
     </SafeAreaView>
   );
 };
@@ -162,16 +191,23 @@ const Gauge: React.FC<{
   unit: string;
   max: number;
   color: string;
-  size?: 'small' | 'medium' | 'large';
-}> = ({label, value, unit, max, color, size = 'medium'}) => {
+  size?: "small" | "medium" | "large";
+}> = ({ label, value, unit, max, color, size = "medium" }) => {
   const percentage = Math.min(value / max, 1);
-  const sizeMap = {small: 100, medium: 140, large: 180};
+  const sizeMap = { small: 100, medium: 140, large: 180 };
   const gaugeSize = sizeMap[size];
 
   return (
-    <View style={[styles.gaugeContainer, {width: gaugeSize, height: gaugeSize}]}>
+    <View
+      style={[styles.gaugeContainer, { width: gaugeSize, height: gaugeSize }]}
+    >
       <Text style={styles.gaugeLabel}>{label}</Text>
-      <View style={[styles.gaugeRing, {width: gaugeSize - 20, height: gaugeSize - 20}]}>
+      <View
+        style={[
+          styles.gaugeRing,
+          { width: gaugeSize - 20, height: gaugeSize - 20 },
+        ]}
+      >
         <View
           style={[
             styles.gaugeFill,
@@ -180,25 +216,25 @@ const Gauge: React.FC<{
               height: gaugeSize - 40,
               borderRadius: (gaugeSize - 40) / 2,
               backgroundColor: color,
-              transform: [{scaleX: percentage}],
+              transform: [{ scaleX: percentage }],
             },
           ]}
         />
       </View>
-      <Text style={[styles.gaugeValue, {color}]}>{value.toFixed(0)}</Text>
+      <Text style={[styles.gaugeValue, { color }]}>{value.toFixed(0)}</Text>
       <Text style={styles.gaugeUnit}>{unit}</Text>
     </View>
   );
 };
 
-const InfoCard: React.FC<{label: string; value: string; color: string}> = ({
+const InfoCard: React.FC<{ label: string; value: string; color: string }> = ({
   label,
   value,
   color,
 }) => (
-  <View style={[styles.infoCard, {borderLeftColor: color}]}>
+  <View style={[styles.infoCard, { borderLeftColor: color }]}>
     <Text style={styles.infoLabel}>{label}</Text>
-    <Text style={[styles.infoValue, {color}]}>{value}</Text>
+    <Text style={[styles.infoValue, { color }]}>{value}</Text>
   </View>
 );
 
@@ -208,9 +244,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background.dark,
   },
   statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: SIZES.md,
   },
   statusDot: {
@@ -220,19 +256,19 @@ const styles = StyleSheet.create({
     marginRight: SIZES.sm,
   },
   statusText: {
-    fontFamily: 'System',
+    fontFamily: "System",
     fontSize: SIZES.md,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   scanContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: SIZES.lg,
   },
   title: {
     fontSize: SIZES.xxl,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.text.primary,
     marginBottom: SIZES.sm,
   },
@@ -240,7 +276,7 @@ const styles = StyleSheet.create({
     fontSize: SIZES.md,
     color: COLORS.text.secondary,
     marginBottom: SIZES.xl,
-    textAlign: 'center',
+    textAlign: "center",
   },
   scanButton: {
     backgroundColor: COLORS.neon.blue,
@@ -251,10 +287,10 @@ const styles = StyleSheet.create({
   scanButtonText: {
     color: COLORS.background.dark,
     fontSize: SIZES.lg,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   deviceList: {
-    width: '100%',
+    width: "100%",
     marginTop: SIZES.xl,
   },
   deviceListTitle: {
@@ -273,7 +309,7 @@ const styles = StyleSheet.create({
   deviceName: {
     color: COLORS.text.primary,
     fontSize: SIZES.lg,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   deviceId: {
     color: COLORS.text.muted,
@@ -285,13 +321,13 @@ const styles = StyleSheet.create({
     padding: SIZES.md,
   },
   gaugeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginBottom: SIZES.lg,
   },
   gaugeContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   gaugeLabel: {
     color: COLORS.text.secondary,
@@ -301,19 +337,19 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 4,
     borderColor: COLORS.background.elevated,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
   },
   gaugeFill: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     top: 0,
-    transformOrigin: 'right center',
+    transformOrigin: "right center",
   },
   gaugeValue: {
     fontSize: SIZES.xxl,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: SIZES.sm,
   },
   gaugeUnit: {
@@ -321,8 +357,8 @@ const styles = StyleSheet.create({
     color: COLORS.text.muted,
   },
   infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: SIZES.md,
   },
   infoCard: {
@@ -340,18 +376,18 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     fontSize: SIZES.lg,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   disconnectButton: {
     backgroundColor: COLORS.neon.red,
     padding: SIZES.md,
     borderRadius: 10,
     marginTop: SIZES.lg,
-    alignItems: 'center',
+    alignItems: "center",
   },
   disconnectText: {
     color: COLORS.background.dark,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: SIZES.md,
   },
 });

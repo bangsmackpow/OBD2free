@@ -1,10 +1,16 @@
-import {BleService} from './BleService';
-import {OBD2PID, OBD2Mode, ATCommand, OBD2Reading, EngineData} from '../types';
-import {OBD2_CONFIG, BLE_CONFIG} from '../constants';
+import { BleService } from "./BleService";
+import {
+  OBD2PID,
+  OBD2Mode,
+  ATCommand,
+  OBD2Reading,
+  EngineData,
+} from "../types";
+import { OBD2_CONFIG } from "../constants";
 
 class OBD2ServiceClass {
   private isInitialized = false;
-  private commandQueue: Array<{pid: OBD2PID; priority?: number}> = [];
+  private commandQueue: Array<{ pid: OBD2PID; priority?: number }> = [];
   private isProcessingQueue = false;
   private lastCommandTime = 0;
   private lastReadings: Map<OBD2PID, OBD2Reading> = new Map();
@@ -17,7 +23,7 @@ class OBD2ServiceClass {
     await BleService.initialize();
 
     // Set up BLE response listener
-    BleService.on('response', this.handleResponse.bind(this));
+    BleService.on("response", this.handleResponse.bind(this));
 
     // Initialize ELM327 adapter
     await this.initializeELM327();
@@ -50,24 +56,27 @@ class OBD2ServiceClass {
 
       // Verify connection
       const version = await this.sendATCommand(ATCommand.PRINT_VERSION);
-      console.log('ELM327 Version:', version);
+      console.log("ELM327 Version:", version);
 
       const protocol = await this.sendATCommand(ATCommand.DESCRIBE_PROTOCOL);
-      console.log('Protocol:', protocol);
+      console.log("Protocol:", protocol);
 
       // Read battery voltage
       const voltage = await this.sendATCommand(ATCommand.READ_BATTERY_VOLTAGE);
-      console.log('Adapter Voltage:', voltage);
+      console.log("Adapter Voltage:", voltage);
 
       // Get supported PIDs
       await this.discoverSupportedPIDs();
     } catch (error) {
-      console.error('ELM327 initialization failed:', error);
+      console.error("ELM327 initialization failed:", error);
       throw error;
     }
   }
 
-  private async sendATCommand(command: ATCommand, attempts: number = 1): Promise<string> {
+  private async sendATCommand(
+    command: ATCommand,
+    attempts: number = 1,
+  ): Promise<string> {
     for (let i = 0; i < attempts; i++) {
       try {
         const response = await BleService.sendCommandWithResponse(command);
@@ -77,26 +86,32 @@ class OBD2ServiceClass {
         await this.delay(100);
       }
     }
-    throw new Error('AT command failed');
+    throw new Error("AT command failed");
   }
 
   private async discoverSupportedPIDs(): Promise<void> {
     // Query standard PID support (0x00)
     try {
-      const response = await this.sendOBDCommand(OBD2Mode.CURRENT_DATA, '00');
+      const response = await this.sendOBDCommand(OBD2Mode.CURRENT_DATA, "00");
       if (response) {
-        console.log('PID Support:', response);
+        console.log("PID Support:", response);
         // Parse bitmask to determine which PIDs are supported
       }
     } catch (error) {
-      console.warn('Could not query PID support:', error);
+      console.warn("Could not query PID support:", error);
     }
   }
 
-  private async sendOBDCommand(mode: OBD2Mode, pid: string): Promise<string | null> {
+  private async sendOBDCommand(
+    mode: OBD2Mode,
+    pid: string,
+  ): Promise<string | null> {
     const command = `${mode}${pid}`;
     try {
-      return await BleService.sendCommandWithResponse(command, OBD2_CONFIG.COMMAND_TIMEOUT);
+      return await BleService.sendCommandWithResponse(
+        command,
+        OBD2_CONFIG.COMMAND_TIMEOUT,
+      );
     } catch (error) {
       console.error(`OBD command failed: ${command}`, error);
       return null;
@@ -112,11 +127,11 @@ class OBD2ServiceClass {
       // Find the response matching the requested PID
       let dataIndex = -1;
       for (let i = 0; i < parts.length; i++) {
-        if (parts[i] === '41' && parts[i + 1] === pid) {
+        if (parts[i] === "41" && parts[i + 1] === pid) {
           dataIndex = i + 2;
           break;
         }
-        if (parts[i] === '62' && parts[i + 1] === pid) {
+        if (parts[i] === "62" && parts[i + 1] === pid) {
           dataIndex = i + 2;
           break;
         }
@@ -133,7 +148,7 @@ class OBD2ServiceClass {
         case OBD2PID.ENGINE_RPM: {
           const a = parseInt(payload[0], 16);
           const b = parseInt(payload[1], 16);
-          return ((a * 256) + b) / 4;
+          return (a * 256 + b) / 4;
         }
 
         case OBD2PID.VEHICLE_SPEED:
@@ -149,7 +164,7 @@ class OBD2ServiceClass {
 
         case OBD2PID.STFT_BANK1:
         case OBD2PID.LTFT_BANK1:
-          return (parseInt(payload[0], 16) / 1.28) - 100;
+          return parseInt(payload[0], 16) / 1.28 - 100;
 
         case OBD2PID.INTAKE_MAP:
           return parseInt(payload[0], 16);
@@ -158,19 +173,23 @@ class OBD2ServiceClass {
           return parseInt(payload[0], 16) / 2.55;
 
         case OBD2PID.TIMING_ADVANCE:
-          return (parseInt(payload[0], 16) / 2) - 64;
+          return parseInt(payload[0], 16) / 2 - 64;
 
         case OBD2PID.MAF_AIR_FLOW:
-          return ((parseInt(payload[0], 16) * 256) + parseInt(payload[1], 16)) / 100;
+          return (
+            (parseInt(payload[0], 16) * 256 + parseInt(payload[1], 16)) / 100
+          );
 
         case OBD2PID.FUEL_TANK_LEVEL:
           return (parseInt(payload[0], 16) * 100) / 255;
 
         case OBD2PID.CONTROL_MODULE_VOLTAGE:
-          return ((parseInt(payload[0], 16) * 256) + parseInt(payload[1], 16)) / 1000;
+          return (
+            (parseInt(payload[0], 16) * 256 + parseInt(payload[1], 16)) / 1000
+          );
 
         case OBD2PID.DISTANCE_MIL:
-          return (parseInt(payload[0], 16) * 256) + parseInt(payload[1], 16);
+          return parseInt(payload[0], 16) * 256 + parseInt(payload[1], 16);
 
         case OBD2PID.OBD_STANDARD:
           return parseInt(payload[0], 16); // Map to protocol name
@@ -181,20 +200,20 @@ class OBD2ServiceClass {
           return parseInt(payload[0], 16);
 
         default:
-          console.warn('Unhandled PID parser:', pid);
+          console.warn("Unhandled PID parser:", pid);
           return null;
       }
     } catch (error) {
-      console.error('Parse error:', error, 'PID:', pid);
+      console.error("Parse error:", error, "PID:", pid);
       return null;
     }
   }
 
   private lastResponseTimestamp = 0;
-  private pendingResponse: {pid: OBD2PID} | null = null;
+  private pendingResponse: { pid: OBD2PID } | null = null;
 
-  private handleResponse(data: {response: string}): void {
-    const {response} = data;
+  private handleResponse(data: { response: string }): void {
+    const { response } = data;
 
     if (!this.pendingResponse) return;
 
@@ -235,42 +254,42 @@ class OBD2ServiceClass {
       voltage: this.lastReadings.get(OBD2PID.CONTROL_MODULE_VOLTAGE)?.value,
     };
 
-    this.readingCallbacks.forEach(cb => cb(data));
+    this.readingCallbacks.forEach((cb) => cb(data));
   }
 
   private getUnitForPID(pid: OBD2PID): string {
     const units: Record<OBD2PID, string> = {
-      [OBD2PID.ENGINE_RPM]: 'RPM',
-      [OBD2PID.VEHICLE_SPEED]: 'km/h',
-      [OBD2PID.ENGINE_LOAD]: '%',
-      [OBD2PID.COOLANT_TEMP]: '°C',
-      [OBD2PID.INTAKE_AIR_TEMP]: '°C',
-      [OBD2PID.AMBIENT_AIR_TEMP]: '°C',
-      [OBD2PID.THROTTLE_POS]: '%',
-      [OBD2PID.STFT_BANK1]: '%',
-      [OBD2PID.LTFT_BANK1]: '%',
-      [OBD2PID.TIMING_ADVANCE]: '°',
-      [OBD2PID.INTAKE_MAP]: 'kPa',
-      [OBD2PID.MAF_AIR_FLOW]: 'g/s',
-      [OBD2PID.FUEL_TANK_LEVEL]: '%',
-      [OBD2PID.CONTROL_MODULE_VOLTAGE]: 'V',
-      [OBD2PID.DISTANCE_MIL]: 'km',
-      [OBD2PID.OBD_STANDARD]: '',
-      [OBD2PID.MAZDA_BOOST_PRESSURE]: 'psi',
-      [OBD2PID.MAZDA_KNOCK_SENSOR]: 'raw',
-      [OBD2PID.BMW_BATTERY_REG_STATUS]: 'raw',
+      [OBD2PID.ENGINE_RPM]: "RPM",
+      [OBD2PID.VEHICLE_SPEED]: "km/h",
+      [OBD2PID.ENGINE_LOAD]: "%",
+      [OBD2PID.COOLANT_TEMP]: "°C",
+      [OBD2PID.INTAKE_AIR_TEMP]: "°C",
+      [OBD2PID.AMBIENT_AIR_TEMP]: "°C",
+      [OBD2PID.THROTTLE_POS]: "%",
+      [OBD2PID.STFT_BANK1]: "%",
+      [OBD2PID.LTFT_BANK1]: "%",
+      [OBD2PID.TIMING_ADVANCE]: "°",
+      [OBD2PID.INTAKE_MAP]: "kPa",
+      [OBD2PID.MAF_AIR_FLOW]: "g/s",
+      [OBD2PID.FUEL_TANK_LEVEL]: "%",
+      [OBD2PID.CONTROL_MODULE_VOLTAGE]: "V",
+      [OBD2PID.DISTANCE_MIL]: "km",
+      [OBD2PID.OBD_STANDARD]: "",
+      [OBD2PID.MAZDA_BOOST_PRESSURE]: "psi",
+      [OBD2PID.MAZDA_KNOCK_SENSOR]: "raw",
+      [OBD2PID.BMW_BATTERY_REG_STATUS]: "raw",
     };
-    return units[pid] || '';
+    return units[pid] || "";
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   // Public API
   async startPolling(): Promise<void> {
     if (!BleService.getIsConnected()) {
-      throw new Error('Not connected');
+      throw new Error("Not connected");
     }
 
     // Start queue processing
@@ -284,8 +303,8 @@ class OBD2ServiceClass {
   }
 
   private enqueuePIDs(pids: readonly OBD2PID[]): void {
-    pids.forEach(pid => {
-      this.commandQueue.push({pid});
+    pids.forEach((pid) => {
+      this.commandQueue.push({ pid });
     });
   }
 
@@ -305,10 +324,13 @@ class OBD2ServiceClass {
         await this.delay(OBD2_CONFIG.COMMAND_DELAY - timeSinceLast);
       }
 
-      this.pendingResponse = {pid: item.pid};
-      const success = await this.sendOBDCommand(OBD2Mode.CURRENT_DATA, item.pid);
+      this.pendingResponse = { pid: item.pid };
+      const success = await this.sendOBDCommand(
+        OBD2Mode.CURRENT_DATA,
+        item.pid,
+      );
       if (!success) {
-        console.warn('Command failed:', item.pid);
+        console.warn("Command failed:", item.pid);
       }
 
       this.lastCommandTime = Date.now();
@@ -360,7 +382,7 @@ class OBD2ServiceClass {
 
   // Diagnostic functions
   async readDTCs(): Promise<string[]> {
-    const response = await this.sendOBDCommand(OBD2Mode.DTC, '');
+    const response = await this.sendOBDCommand(OBD2Mode.DTC, "");
     if (!response) return [];
 
     // Parse DTCs from response
@@ -383,9 +405,13 @@ class OBD2ServiceClass {
     const byte2 = parseInt(low, 16);
 
     const letter =
-      byte1 & 0b10000000 ? 'P' :
-      byte1 & 0b01000000 ? 'C' :
-      byte1 & 0b00100000 ? 'B' : 'U';
+      byte1 & 0b10000000
+        ? "P"
+        : byte1 & 0b01000000
+          ? "C"
+          : byte1 & 0b00100000
+            ? "B"
+            : "U";
 
     const digit1 = (byte1 & 0b00110000) >> 4;
     const digit2 = byte1 & 0b00001111;
@@ -396,18 +422,20 @@ class OBD2ServiceClass {
   }
 
   async clearDTCs(): Promise<boolean> {
-    const response = await this.sendOBDCommand(OBD2Mode.CLEAR_DTC, '');
+    const response = await this.sendOBDCommand(OBD2Mode.CLEAR_DTC, "");
     return response !== null;
   }
 
   // Manufacturer-specific diagnostics
   async readMazdaBoost(): Promise<number | null> {
     // Mode 22 PID 0x56 (Mazda-specific)
-    const response = await this.sendOBDCommand(OBD2Mode.ENHANCED, '56');
+    const response = await this.sendOBDCommand(OBD2Mode.ENHANCED, "56");
     if (!response) return null;
     // Parse response (format varies by model year)
     const parts = response.trim().split(/\s+/);
-    const dataIndex = parts.findIndex((p, i) => p === '62' && parts[i + 1] === '56');
+    const dataIndex = parts.findIndex(
+      (p, i) => p === "62" && parts[i + 1] === "56",
+    );
     if (dataIndex !== -1 && dataIndex + 2 < parts.length) {
       return parseInt(parts[dataIndex + 2], 16);
     }

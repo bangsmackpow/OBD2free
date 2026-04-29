@@ -1,13 +1,13 @@
-import {MMKV} from 'react-native-mmkv';
-import RNFS from 'react-native-fs';
-import {v4 as uuidv4} from 'uuid';
-import {OBD2Reading, EngineData, GPSPoint, LoggingSession} from '../types';
-import {OBD2Service} from './OBD2Service';
-import {GPSService} from './GPSService';
-import {LOGGING_CONFIG, STORAGE_KEYS} from '../constants';
+import { MMKV } from "react-native-mmkv";
+import RNFS from "react-native-fs";
+import { v4 as uuidv4 } from "uuid";
+import { EngineData, GPSPoint, LoggingSession } from "../types";
+import { OBD2Service } from "./OBD2Service";
+import { GPSService } from "./GPSService";
+import { LOGGING_CONFIG, STORAGE_KEYS } from "../constants";
 
 class DataLoggerClass {
-  private storage: MMKV;
+  private storage: MMKV | null;
   private currentSession: LoggingSession | null = null;
   private csvBuffer: string[] = [];
   private isLogging = false;
@@ -16,8 +16,8 @@ class DataLoggerClass {
 
   constructor() {
     this.storage = new MMKV({
-      id: 'obd2free-storage',
-      encryptionKey: 'obd2free-encryption-key',
+      id: "obd2free-storage",
+      encryptionKey: "obd2free-encryption-key",
     });
     this.readingCallback = this.handleReading.bind(this);
   }
@@ -78,9 +78,9 @@ class DataLoggerClass {
     const timestamp = new Date().toISOString();
     const row = [
       timestamp,
-      gps?.lat ?? '',
-      gps?.lng ?? '',
-      gps?.speed ?? '',
+      gps?.lat ?? "",
+      gps?.lng ?? "",
+      gps?.speed ?? "",
       data.rpm.toFixed(1),
       data.speed.toFixed(1),
       data.coolantTemp.toFixed(1),
@@ -92,41 +92,41 @@ class DataLoggerClass {
       data.ltft.toFixed(2),
       data.map.toFixed(2),
       data.maf.toFixed(2),
-      data.ambientTemp?.toFixed(1) ?? '',
-      data.fuelLevel?.toFixed(1) ?? '',
-      data.voltage?.toFixed(3) ?? '',
+      data.ambientTemp?.toFixed(1) ?? "",
+      data.fuelLevel?.toFixed(1) ?? "",
+      data.voltage?.toFixed(3) ?? "",
     ];
 
-    return row.join(',');
+    return row.join(",");
   }
 
   private getCSVHeader(): string {
     return [
-      'timestamp',
-      'latitude',
-      'longitude',
-      'gps_speed',
-      'rpm',
-      'speed',
-      'coolant_temp',
-      'intake_air_temp',
-      'throttle_pos',
-      'engine_load',
-      'timing_advance',
-      'stft',
-      'ltft',
-      'map',
-      'maf',
-      'ambient_temp',
-      'fuel_level',
-      'voltage',
-    ].join(',');
+      "timestamp",
+      "latitude",
+      "longitude",
+      "gps_speed",
+      "rpm",
+      "speed",
+      "coolant_temp",
+      "intake_air_temp",
+      "throttle_pos",
+      "engine_load",
+      "timing_advance",
+      "stft",
+      "ltft",
+      "map",
+      "maf",
+      "ambient_temp",
+      "fuel_level",
+      "voltage",
+    ].join(",");
   }
 
   private flushBuffer(): Promise<void> {
     if (this.csvBuffer.length < 2) return Promise.resolve();
 
-    const csvContent = this.csvBuffer.join('\n') + '\n';
+    const csvContent = this.csvBuffer.join("\n") + "\n";
     this.csvBuffer = [this.getCSVHeader()]; // Reset buffer with header
 
     // Write to file system
@@ -149,7 +149,7 @@ class DataLoggerClass {
         await RNFS.writeFile(filepath, content);
       }
     } catch (error) {
-      console.error('File write error:', error);
+      console.error("File write error:", error);
     }
   }
 
@@ -166,7 +166,8 @@ class DataLoggerClass {
 
     // Update session metadata
     this.currentSession.endTime = Date.now();
-    this.currentSession.duration = this.currentSession.endTime - this.currentSession.startTime;
+    this.currentSession.duration =
+      this.currentSession.endTime - this.currentSession.startTime;
 
     // Calculate derived metrics
     await this.calculateSessionMetrics();
@@ -184,10 +185,10 @@ class DataLoggerClass {
       this.flushInterval = null;
     }
 
-     return session;
-   }
+    return session;
+  }
 
-   private async calculateSessionMetrics(): Promise<void> {
+  private async calculateSessionMetrics(): Promise<void> {
     if (!this.currentSession) return;
 
     const session = this.currentSession;
@@ -196,8 +197,8 @@ class DataLoggerClass {
     const filepath = `${RNFS.CachesDirectoryPath}/${filename}`;
 
     try {
-      const csvContent = await RNFS.readFile(filepath, 'utf8');
-      const lines = csvContent.split('\n').slice(1); // Skip header
+      const csvContent = await RNFS.readFile(filepath, "utf8");
+      const lines = csvContent.split("\n").slice(1); // Skip header
       let maxSpeed = 0;
       let totalSpeed = 0;
       let speedCount = 0;
@@ -205,7 +206,7 @@ class DataLoggerClass {
 
       for (const line of lines) {
         if (!line.trim()) continue;
-        const cols = line.split(',');
+        const cols = line.split(",");
         const speed = parseFloat(cols[4]) || 0; // speed column
 
         maxSpeed = Math.max(maxSpeed, speed);
@@ -216,7 +217,7 @@ class DataLoggerClass {
         if (cols[1] && cols[2]) {
           const lat = parseFloat(cols[1]);
           const lng = parseFloat(cols[2]);
-          const currentPoint: GPSPoint = {lat, lng, timestamp: Date.now()};
+          const currentPoint: GPSPoint = { lat, lng, timestamp: Date.now() };
 
           if (prevPoint) {
             const delta = this.calculateDistance(prevPoint, currentPoint);
@@ -230,7 +231,7 @@ class DataLoggerClass {
       session.avgSpeed = speedCount > 0 ? totalSpeed / speedCount : 0;
       session.distance = session.distance || 0;
     } catch (error) {
-      console.error('Error calculating metrics:', error);
+      console.error("Error calculating metrics:", error);
     }
   }
 
@@ -267,24 +268,22 @@ class DataLoggerClass {
         console.log(`Session file is ${stats.size} bytes - would compress`);
       }
     } catch (error) {
-      console.error('Compression check error:', error);
+      console.error("Compression check error:", error);
     }
   }
 
   private saveSessionMetadata(): void {
-    if (!this.currentSession) return;
+    if (!this.currentSession || !this.storage) return;
 
-    // Save to MMKV
     const sessions = this.getStoredSessions();
     sessions[this.currentSession.id] = this.currentSession;
     this.storage.set(STORAGE_KEYS.LAST_SESSION, JSON.stringify(sessions));
 
-    // Update session count
     this.storage.set(STORAGE_KEYS.SESSION_COUNT, sessions.length.toString());
   }
 
   private getStoredSessions(): Record<string, LoggingSession> {
-    const data = this.storage.getString(STORAGE_KEYS.LAST_SESSION);
+    const data = this.storage?.getString(STORAGE_KEYS.LAST_SESSION);
     return data ? JSON.parse(data) : {};
   }
 
@@ -292,9 +291,8 @@ class DataLoggerClass {
   private lastGPS: GPSPoint | null = null;
 
   updateGPS = (point: GPSPoint): void => {
-    GPSService['lastLocation'] = point;
-    // Store last GPS in MMKV for emergency access
-    this.storage.set(STORAGE_KEYS.LAST_GPS, JSON.stringify(point));
+    GPSService["lastLocation"] = point;
+    this.storage?.set(STORAGE_KEYS.LAST_GPS, JSON.stringify(point));
   };
 
   private getLastGPS(): GPSPoint | null {
@@ -303,7 +301,10 @@ class DataLoggerClass {
   }
 
   // Upload to Cloudflare R2
-  async uploadSession(sessionId: string, presignedUrl: string): Promise<boolean> {
+  async uploadSession(
+    sessionId: string,
+    presignedUrl: string,
+  ): Promise<boolean> {
     if (!this.currentSession || this.currentSession.id !== sessionId) {
       return false;
     }
@@ -314,7 +315,7 @@ class DataLoggerClass {
     try {
       const fileExists = await RNFS.exists(filepath);
       if (!fileExists) {
-        console.error('Session file not found');
+        console.error("Session file not found");
         return false;
       }
 
@@ -323,25 +324,25 @@ class DataLoggerClass {
 
       // Upload via presigned URL (direct to R2)
       const response = await fetch(presignedUrl, {
-        method: 'PUT',
-        body: await RNFS.readFile(filepath, 'base64'),
+        method: "PUT",
+        body: await RNFS.readFile(filepath, "base64"),
         headers: {
-          'Content-Type': 'text/csv',
-          'Content-Length': fileSize.toString(),
+          "Content-Type": "text/csv",
+          "Content-Length": fileSize.toString(),
         },
       });
 
       if (response.ok) {
-        console.log('Upload successful');
+        console.log("Upload successful");
         this.currentSession.fileKey = `sessions/${sessionId}/${filename}`;
         this.saveSessionMetadata();
         return true;
       } else {
-        console.error('Upload failed:', response.status);
+        console.error("Upload failed:", response.status);
         return false;
       }
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error("Upload error:", error);
       return false;
     }
   }
@@ -369,26 +370,30 @@ class DataLoggerClass {
   }
 
   // Cleanup old sessions (keep only N most recent)
-  cleanupOldSessions(keepCount: number = LOGGING_CONFIG.MAX_LOCAL_SESSIONS): void {
+  cleanupOldSessions(
+    keepCount: number = LOGGING_CONFIG.MAX_LOCAL_SESSIONS,
+  ): void {
     const sessions = this.getStoredSessions();
     const sessionArray = Object.values(sessions);
     if (sessionArray.length <= keepCount) return;
 
-    const toDelete = sessionArray.slice(keepCount).map(s => s.id);
-    toDelete.forEach(id => {
+    const toDelete = sessionArray.slice(keepCount).map((s) => s.id);
+    toDelete.forEach((id) => {
       delete sessions[id];
       // Delete file
-      RNFS.unlink(`${RNFS.CachesDirectoryPath}/session_${id}.csv`).catch(() => {});
+      RNFS.unlink(`${RNFS.CachesDirectoryPath}/session_${id}.csv`).catch(
+        () => {},
+      );
     });
 
-    this.storage.set(STORAGE_KEYS.LAST_SESSION, JSON.stringify(sessions));
+    this.storage?.set(STORAGE_KEYS.LAST_SESSION, JSON.stringify(sessions));
   }
 
   destroy(): void {
     if (this.isLogging) {
       this.stopSession();
     }
-    this.storage = null as any;
+    this.storage = null;
   }
 }
 

@@ -1,43 +1,43 @@
 export const COLORS = {
   // Primary neon colors
   neon: {
-    blue: '#00D4FF',
-    green: '#39FF14',
-    pink: '#FF10F0',
-    purple: '#BC13FE',
-    yellow: '#FFFF00',
-    orange: '#FF5E00',
-    red: '#FF0055',
+    blue: "#00D4FF",
+    green: "#39FF14",
+    pink: "#FF10F0",
+    purple: "#BC13FE",
+    yellow: "#FFFF00",
+    orange: "#FF5E00",
+    red: "#FF0055",
   } as const,
 
   // Backgrounds
   background: {
-    dark: '#0A0A0A',
-    darker: '#050505',
-    card: '#141414',
-    elevated: '#1E1E1E',
+    dark: "#0A0A0A",
+    darker: "#050505",
+    card: "#141414",
+    elevated: "#1E1E1E",
   } as const,
 
   // Text
   text: {
-    primary: '#FFFFFF',
-    secondary: '#B0B0B0',
-    muted: '#666666',
+    primary: "#FFFFFF",
+    secondary: "#B0B0B0",
+    muted: "#666666",
   } as const,
 
   // Status
   status: {
-    success: '#39FF14',
-    warning: '#FFAA00',
-    error: '#FF0055',
-    info: '#00D4FF',
+    success: "#39FF14",
+    warning: "#FFAA00",
+    error: "#FF0055",
+    info: "#00D4FF",
   } as const,
 };
 
 export const FONTS = {
-  regular: 'System',
-  bold: 'System',
-  mono: 'Menlo',
+  regular: "System",
+  bold: "System",
+  mono: "Menlo",
 };
 
 export const SIZES = {
@@ -51,7 +51,7 @@ export const SIZES = {
 } as const;
 
 // OBD2 Configuration
-import {OBD2PID} from '../types';
+import { OBD2PID } from "../types";
 
 export const OBD2_CONFIG = {
   DEFAULT_POLL_RATE: 100, // ms (10Hz for OBDLink LX)
@@ -79,21 +79,21 @@ export const OBD2_CONFIG = {
     OBD2PID.AMBIENT_AIR_TEMP,
   ],
   // Manufacturer-specific PIDs
-  MAZDA_BOOST_PRESSURE: '0x56', // Mode 22 PID - Mazda specific (not yet in enum)
-  BMW_BATTERY_VOLTAGE: '0x42', // Already in standard PID, but may need Mode 22 for enhanced
+  MAZDA_BOOST_PRESSURE: "0x56", // Mode 22 PID - Mazda specific (not yet in enum)
+  BMW_BATTERY_VOLTAGE: "0x42", // Already in standard PID, but may need Mode 22 for enhanced
 } as const;
 
 // BLE Configuration
 export const BLE_CONFIG = {
   // Service UUIDs
-  OBD2_SERVICE_UUID: 'FFE0', // Common for ELM327-based adapters
-  OBD2_CHARACTERISTIC_UUID: 'FFE1',
+  OBD2_SERVICE_UUID: "FFE0", // Common for ELM327-based adapters
+  OBD2_CHARACTERISTIC_UUID: "FFE1",
   // Alt UUIDs for different adapters
-  ALT_SERVICE_UUIDS: ['FFE0', '6E400001-B5A3-F393-E0A9-E50E24DCCA9E'], // Nordic UART
-  ALT_CHARACTERISTIC_UUIDS: ['FFE1', '6E400003-B5A3-F393-E0A9-E50E24DCCA9E'],
+  ALT_SERVICE_UUIDS: ["FFE0", "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"], // Nordic UART
+  ALT_CHARACTERISTIC_UUIDS: ["FFE1", "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"],
   // Scanning
   SCAN_DURATION: 5, // seconds
-  SCAN_MODE: 'LowLatency',
+  SCAN_MODE: "LowLatency",
   // Connection
   AUTO_RECONNECT: true,
   RECONNECT_DELAY: 3000, // ms
@@ -121,10 +121,10 @@ export const GPS_CONFIG = {
 
 // Cloudflare Configuration
 export const CLOUDFLARE_CONFIG = {
-  API_URL: 'https://api.obd2free.app',
-  WORKER_URL: 'https://worker.obd2free.app',
-  R2_BUCKET: 'obd2free-logs',
-  D1_DATABASE: 'obd2free-db',
+  API_URL: "https://api.obd2free.app",
+  WORKER_URL: "https://worker.obd2free.app",
+  R2_BUCKET: "obd2free-logs",
+  D1_DATABASE: "obd2free-db",
   PRESIGNED_URL_EXPIRY: 3600, // 1 hour
   MAX_FILE_SIZE: 100 * 1024 * 1024, // 100MB
   UPLOAD_CHUNK_SIZE: 5 * 1024 * 1024, // 5MB (R2 multipart min)
@@ -148,59 +148,59 @@ export const PREMIUM_CONFIG = {
 // App Storage Keys (MMKV)
 export const STORAGE_KEYS = {
   // User
-  USER_ID: 'user_id',
-  USER_EMAIL: 'user_email',
-  PREMIUM_STATUS: 'premium_status',
-  PREMIUM_EXPIRY: 'premium_expiry',
+  USER_ID: "user_id",
+  USER_EMAIL: "user_email",
+  PREMIUM_STATUS: "premium_status",
+  PREMIUM_EXPIRY: "premium_expiry",
 
   // Vehicle
-  CURRENT_VEHICLE: 'current_vehicle',
-  VEHICLES: 'vehicles',
+  CURRENT_VEHICLE: "current_vehicle",
+  VEHICLES: "vehicles",
 
   // Connection
-  LAST_CONNECTED_DEVICE: 'last_connected_device',
-  DEVICE_NAME: 'device_name',
+  LAST_CONNECTED_DEVICE: "last_connected_device",
+  DEVICE_NAME: "device_name",
 
   // Dashboard
-  DASHBOARD_LAYOUTS: 'dashboard_layouts',
-  ACTIVE_DASHBOARD: 'active_dashboard',
+  DASHBOARD_LAYOUTS: "dashboard_layouts",
+  ACTIVE_DASHBOARD: "active_dashboard",
 
   // Sessions
-  LAST_SESSION: 'last_session',
-  SESSION_COUNT: 'session_count',
+  LAST_SESSION: "last_session",
+  SESSION_COUNT: "session_count",
 
   // Settings
-  POLL_RATE: 'poll_rate',
-  AUTO_CONNECT: 'auto_connect',
-  BACKGROUND_LOGGING: 'background_logging',
-  UNITS: 'units', // metric/imperial
+  POLL_RATE: "poll_rate",
+  AUTO_CONNECT: "auto_connect",
+  BACKGROUND_LOGGING: "background_logging",
+  UNITS: "units", // metric/imperial
 
   // GPS
-  LAST_GPS: 'last_gps',
-  HOME_LOCATION: 'home_location',
+  LAST_GPS: "last_gps",
+  HOME_LOCATION: "home_location",
 
   // Cloud
-  API_TOKEN: 'api_token',
-  SYNC_ENABLED: 'sync_enabled',
+  API_TOKEN: "api_token",
+  SYNC_ENABLED: "sync_enabled",
 } as const;
 
 // Units
 export const UNITS = {
-  METRIC: 'metric',
-  IMPERIAL: 'imperial',
+  METRIC: "metric",
+  IMPERIAL: "imperial",
 } as const;
 
 export const UNIT_CONVERSIONS = {
   speed: {
-    [UNITS.METRIC]: { factor: 1, suffix: 'km/h' },
-    [UNITS.IMPERIAL]: { factor: 0.621371, suffix: 'mph' },
+    [UNITS.METRIC]: { factor: 1, suffix: "km/h" },
+    [UNITS.IMPERIAL]: { factor: 0.621371, suffix: "mph" },
   },
   distance: {
-    [UNITS.METRIC]: { factor: 1, suffix: 'km' },
-    [UNITS.IMPERIAL]: { factor: 0.621371, suffix: 'mi' },
+    [UNITS.METRIC]: { factor: 1, suffix: "km" },
+    [UNITS.IMPERIAL]: { factor: 0.621371, suffix: "mi" },
   },
   temperature: {
-    [UNITS.METRIC]: { factor: 1, offset: 0, suffix: '°C' },
-    [UNITS.IMPERIAL]: { factor: 1.8, offset: 32, suffix: '°F' }, // C to F: (C * 1.8) + 32
+    [UNITS.METRIC]: { factor: 1, offset: 0, suffix: "°C" },
+    [UNITS.IMPERIAL]: { factor: 1.8, offset: 32, suffix: "°F" }, // C to F: (C * 1.8) + 32
   },
 } as const;

@@ -1,1 +1,1 @@
-export {COLORS, SIZES, FONTS} from './index';
+export { COLORS, SIZES, FONTS } from "./index";

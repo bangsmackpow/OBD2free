@@ -1,7 +1,14 @@
-import React, {createContext, useContext, useState, useEffect, ReactNode, useCallback} from 'react';
-import {BleService} from '../services/BleService';
-import {BLEDevice, ConnectionState, EngineData} from '../types';
-import {OBD2Service} from '../services/OBD2Service';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
+import { BleService } from "../services/BleService";
+import { BLEDevice, ConnectionState, EngineData } from "../types";
+import { OBD2Service } from "../services/OBD2Service";
 
 interface BleContextType {
   state: ConnectionState;
@@ -22,8 +29,10 @@ interface BleProviderProps {
   children: ReactNode;
 }
 
-export const BleProvider: React.FC<BleProviderProps> = ({children}) => {
-  const [state, setState] = useState<ConnectionState>(ConnectionState.DISCONNECTED);
+export const BleProvider: React.FC<BleProviderProps> = ({ children }) => {
+  const [state, setState] = useState<ConnectionState>(
+    ConnectionState.DISCONNECTED,
+  );
   const [device, setDevice] = useState<BLEDevice | null>(null);
   const [devices, setDevices] = useState<BLEDevice[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -58,14 +67,14 @@ export const BleProvider: React.FC<BleProviderProps> = ({children}) => {
       setState(ConnectionState.CONNECTING);
       await BleService.initialize();
       setState(ConnectionState.DISCONNECTED);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
       setState(ConnectionState.ERROR);
     }
   };
 
   const cleanup = () => {
-    BleService.off('response', updateEngineData);
+    BleService.off("response", updateEngineData);
   };
 
   const scanForDevices = async () => {
@@ -76,23 +85,23 @@ export const BleProvider: React.FC<BleProviderProps> = ({children}) => {
 
       // Set up device discovery listener
       const handleDeviceFound = (device: BLEDevice) => {
-        setDevices(prev => {
+        setDevices((prev) => {
           // Avoid duplicates
-          if (prev.some(d => d.id === device.id)) return prev;
+          if (prev.some((d) => d.id === device.id)) return prev;
           return [...prev, device];
         });
       };
 
-      BleService.on('deviceFound', handleDeviceFound);
+      BleService.on("deviceFound", handleDeviceFound);
 
       // Stop scanning after delay
       setTimeout(() => {
         BleService.stopScanning();
         setState(ConnectionState.DISCONNECTED);
-        BleService.off('deviceFound', handleDeviceFound);
+        BleService.off("deviceFound", handleDeviceFound);
       }, 5000);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
       setState(ConnectionState.ERROR);
     }
   };
@@ -107,8 +116,8 @@ export const BleProvider: React.FC<BleProviderProps> = ({children}) => {
       // Convert Device to BLEDevice
       const connectedDevice = BleService.getConnectedDevice();
       setDevice({
-        id: connectedDevice?.id ?? '',
-        name: connectedDevice?.name ?? 'OBD2 Adapter',
+        id: connectedDevice?.id ?? "",
+        name: connectedDevice?.name ?? "OBD2 Adapter",
         rssi: connectedDevice?.rssi ?? -100,
       });
 
@@ -119,8 +128,8 @@ export const BleProvider: React.FC<BleProviderProps> = ({children}) => {
       OBD2Service.onReading(updateEngineData);
 
       setState(ConnectionState.CONNECTED);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
       setState(ConnectionState.ERROR);
       throw err;
     }
@@ -136,7 +145,7 @@ export const BleProvider: React.FC<BleProviderProps> = ({children}) => {
 
   const startPolling = async () => {
     if (state !== ConnectionState.CONNECTED) {
-      throw new Error('Not connected to device');
+      throw new Error("Not connected to device");
     }
     OBD2Service.onReading(updateEngineData);
   };
@@ -164,7 +173,7 @@ export const BleProvider: React.FC<BleProviderProps> = ({children}) => {
 export const useBle = (): BleContextType => {
   const context = useContext(BleContext);
   if (!context) {
-    throw new Error('useBle must be used within a BleProvider');
+    throw new Error("useBle must be used within a BleProvider");
   }
   return context;
 };
