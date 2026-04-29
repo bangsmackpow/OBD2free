@@ -13,9 +13,12 @@ buildscript {
     }
     dependencies {
         classpath("com.android.tools.build:gradle:8.1.1")
-        classpath("com.facebook.react:react-native-gradle-plugin:0.73.4")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
     }
+}
+
+plugins {
+    id("com.facebook.react.rootproject")
 }
 
 allprojects {
@@ -25,5 +28,3 @@ allprojects {
         maven { url("$rootDir/../node_modules/react-native/android") }
     }
 }
-
-apply plugin: "com.facebook.react.rootproject"
