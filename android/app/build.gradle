@@ -4,10 +4,6 @@ plugins {
     id("com.facebook.react")
 }
 
-react {
-    autolinkLibrariesWithApp()
-}
-
 def enableProguardInReleaseBuilds = false
 def jscFlavor = 'org.webkit:android-jsc:+'
 
