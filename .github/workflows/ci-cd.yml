@@ -101,6 +101,7 @@ jobs:
           pod install
 
       - name: Build iOS
+        working-directory: ios
         run: |
           xcodebuild -workspace OBD2Free.xcworkspace \
             -scheme OBD2Free \
