@@ -1,10 +1,6 @@
-plugins {
-  id("com.android.application")
-  id("org.jetbrains.kotlin.android")
-  id("com.facebook.react")
-}
-
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+apply plugin: "com.android.application"
+apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.facebook.react"
 
 def enableProguardInReleaseBuilds = false
 def jscFlavor = 'org.webkit:android-jsc:+'
@@ -43,10 +39,12 @@ android {
 }
 
 dependencies {
-    implementation("com.facebook.react:react-android:0.73.4")
+    implementation("com.facebook.react:react-android")
     if (hermesEnabled.toBoolean()) {
-        implementation("com.facebook.react:hermes-android:0.73.4")
+        implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
     }
 }
+
+apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
