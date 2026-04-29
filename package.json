@@ -28,7 +28,7 @@
     "react-native-foreground-service": "^1.0.0",
     "react-native-fs": "^2.20.0",
     "react-native-geolocation-service": "^5.3.1",
-    "react-native-gesture-handler": "^2.16.2",
+    "react-native-gesture-handler": "^2.14.1",
     "react-native-mmkv": "^2.12.2",
     "react-native-permissions": "^3.10.1",
     "react-native-reanimated": "3.6.2",
