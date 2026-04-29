@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "build:android": "cd android && ./gradlew assembleRelease",
     "build:ios": "cd ios && xcodebuild -workspace OBD2Free.xcworkspace -scheme OBD2Free -configuration Release",
+    "postinstall": "patch-package",
     "build:web": "cd web && npm run build",
     "build:worker": "cd cloudflare/worker && npm run build:worker",
     "deploy:worker": "cd cloudflare/worker && wrangler deploy",
@@ -55,6 +56,7 @@
     "eslint": "^8.57.0",
     "jest": "^29.6.0",
     "metro-react-native-babel-preset": "0.77.0",
+    "patch-package": "^8.0.1",
     "prettier": "3.1.0",
     "typescript": "5.1.3"
   }
