@@ -52,7 +52,7 @@ temp/
 
 # Build outputs
 dist/
-lib/
+*.tsbuildinfo
 
 # MMKV storage files
 *.mmkv
