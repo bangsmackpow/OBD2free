@@ -4,6 +4,7 @@ import { handleUpload } from "./routes/upload";
 import { handleDevices } from "./routes/devices";
 import { handleAdmin } from "./routes/admin";
 import { handleDocs } from "./routes/docs";
+import { handleDTC } from "./routes/dtcs";
 import { ensureAdminUser } from "./middleware/setup";
 import type { Env } from "./types";
 
@@ -72,6 +73,11 @@ export default {
 
       if (path.startsWith("/api/admin")) {
         return withCors(await handleAdmin(request, env));
+      }
+
+      // DTC lookup routes (public)
+      if (path.startsWith("/api/dtc")) {
+        return withCors(await handleDTC(request, env));
       }
 
       return withCors(new Response(JSON.stringify({ error: "Not Found" }), {

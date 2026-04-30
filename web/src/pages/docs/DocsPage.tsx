@@ -7,6 +7,7 @@ const docMeta: Record<string, {title: string; description: string}> = {
   "technical-reference": {title: "Technical Reference", description: "API docs, JWT auth, CSV schema, and complete OBD2 PID reference."},
   "admin-guide": {title: "Admin Guide", description: "User management, license controls, system configuration."},
   troubleshooting: {title: "Troubleshooting", description: "Common issues with connections, data, accounts, and solutions."},
+  "fault-codes": {title: "Fault Codes (DTC)", description: "Complete DTC reference with descriptions, causes, fixes, and severity ratings."},
 };
 
 export default function DocsPage() {
