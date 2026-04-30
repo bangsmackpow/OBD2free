@@ -28,18 +28,18 @@ export async function handleDocs(
 
 async function listDocs(env: Env): Promise<Response> {
   try {
-    const objects = await env.DOCS_BUCKET.list({ prefix: "docs/" });
+    const objects = await env.DOCS_BUCKET.list();
     const docs = objects.objects
       .filter((o) => o.key.endsWith(".md"))
       .map((o) => ({
-        slug: o.key.replace("docs/", "").replace(".md", ""),
+        slug: o.key.replace(".md", "").replace(/^docs\//, ""),
         size: o.size,
         uploaded: o.uploaded,
       }));
 
     return jsonResponse({ docs });
-  } catch {
-    return jsonResponse({ docs: [] });
+  } catch (err) {
+    return jsonResponse({ docs: [], error: err instanceof Error ? err.message : String(err) }, 500);
   }
 }
 
@@ -47,22 +47,13 @@ async function getDoc(slug: string, env: Env): Promise<Response> {
   try {
     const key = `docs/${slug}.md`;
     const obj = await env.DOCS_BUCKET.get(key);
-
     if (!obj) {
-      // Try index file for directory-style paths
-      const indexKey = `docs/${slug}/index.md`;
-      const indexObj = await env.DOCS_BUCKET.get(indexKey);
-      if (!indexObj) {
-        return jsonResponse({ error: "Document not found" }, 404);
-      }
-      const content = await indexObj.text();
-      return jsonResponse({ slug, content, key: indexKey });
+      return jsonResponse({ error: "Document not found" }, 404);
     }
-
     const content = await obj.text();
     return jsonResponse({ slug, content, key });
-  } catch {
-    return jsonResponse({ error: "Document not found" }, 404);
+  } catch (err) {
+    return jsonResponse({ error: `Doc retrieval failed: ${err instanceof Error ? err.message : String(err)}` }, 500);
   }
 }
 
