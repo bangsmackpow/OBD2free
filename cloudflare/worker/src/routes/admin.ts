@@ -1,5 +1,5 @@
 import { authenticate, requireAdmin } from "../middleware/auth";
-import { jsonResponse, uuid } from "../middleware/setup";
+import { jsonResponse } from "../middleware/setup";
 import { hashPassword } from "../utils";
 import type { Env } from "../types";
 

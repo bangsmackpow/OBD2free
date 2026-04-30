@@ -22,6 +22,7 @@ export async function handleDevices(
       if (pathParts.length === 3) {
         return deleteDevice(auth.sub, pathParts[2], env);
       }
+      return jsonResponse({ error: "Not found" }, 404);
     default:
       return jsonResponse({ error: "Not found" }, 404);
   }

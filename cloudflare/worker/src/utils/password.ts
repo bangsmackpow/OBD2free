@@ -1,9 +1,7 @@
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
 
 async function getKey(
   password: string,
-  salt: Uint8Array,
 ): Promise<CryptoKey> {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -53,7 +51,7 @@ export async function verifyPassword(
     saltHex.match(/.{2}/g)!.map((b) => parseInt(b, 16)),
   );
 
-  const key = await getKey(password, salt);
+  const key = await getKey(password);
   const hash = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",
