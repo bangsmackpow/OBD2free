@@ -1,13 +1,18 @@
 # OBD2Free — Next Steps
 
-## ✅ COMPLETED (This Session)
+> Updated: 2026-04-30 | V2-PRO ELM327 Focus
+
+---
+
+## ✅ COMPLETED
 
 ### Infrastructure
 - [x] D1 database created and migrated (4 tables)
 - [x] R2 buckets created (logs + docs)
 - [x] KV namespace created
 - [x] Worker deployed with full API
-- [x] Documentation content uploaded to R2 (6 pages)
+- [x] Documentation content uploaded to R2 (7 pages)
+- [x] V2-PRO hardware reference document created
 
 ### Authentication
 - [x] JWT auth via Web Crypto API (HMAC-SHA256)
@@ -39,7 +44,7 @@
 
 ---
 
-## 📋 Immediate Next Steps (Pick Up Here)
+## 📋 IMMEDIATE NEXT STEPS
 
 ### 1. 🔑 Set Up Release Signing (30 min)
 ```bash
@@ -57,29 +62,89 @@ base64 -i obd2free-release.keystore | pbcopy
 npm run release  # or: git tag v0.1.0 && git push origin v0.1.0
 ```
 
-### 2. 📱 Test Mobile App on Device
-- Generate native build files already exist (`android/`, `ios/`)
-- `npm run ios` or `npm run android`
-- Purchase OBDLink LX ($70) from scantool.net
-- Plug into vehicle → Scan → Connect → Verify live data
+### 2. 📱 Purchase Test Hardware ($90)
+**OBDLink LX** from scantool.net — required for BLE testing
+- Fastest ELM327 implementation (~100 PIDs/sec)
+- Firmware updates, secure pairing, BatterySaver mode
+- Full ELM327 v1.5 command set support
 
-### 3. 💳 Stripe Payment Integration (Phase 3)
+Alternative budget option: Vgate vLinker MC+ (~$45)
+
+### 3. 📱 Test Mobile App on Device
+```bash
+npm run ios        # iOS simulator
+npm run android    # Android emulator
+```
+Once OBDLink LX arrives:
+- Plug into vehicle OBD-II port
+- Open app → Scan → Connect to OBDLink LX
+- Verify live data streaming (RPM, speed, coolant temp)
+- Test DTC read/clear functionality
+
+### 4. 💳 Stripe Payment Integration (Phase 3)
 - Add Stripe Checkout for monthly/lifetime premium
 - Webhook handler in Cloudflare Worker
 - Pricing page in web app
+- Update premium feature gating
 
-### 4. 🔔 Password Reset Emails
+### 5. 🔔 Password Reset Emails
 - Connect Resend or SendGrid for email delivery
 - Update `forgot-password` route to send real emails
-
-### 5. 📊 Advanced Web Features
-- Session comparison tool (overlay trips)
-- GPS map view on session detail
-- Export to PDF reports
+- Add email templates (branded HTML)
 
 ---
 
-## Commands Reference
+## 🎯 ELM327 MAXIMIZATION ROADMAP
+
+See [V2-PRO.md](./V2-PRO.md) for complete hardware analysis and feature parity matrix.
+
+### Phase 1: Core OBD-II (Current) — 80% Complete
+- [x] DTC read/clear with descriptions (180+ codes)
+- [ ] Live data dashboard (20+ common PIDs)
+- [ ] Freeze frame viewer
+- [ ] I/M readiness status display
+- [ ] O2 sensor test results (Mode 05)
+- [ ] Vehicle information (VIN, CAL ID, CVN via Mode 09)
+- [ ] Pending DTCs display (Mode 07)
+- [ ] Permanent DTCs display (Mode 0A)
+
+### Phase 2: Enhanced Monitoring — Next Priority
+- [ ] Full 90+ PID support with formulas
+- [ ] Real-time graphing (multi-PID overlay)
+- [ ] Fuel economy calculator (instant + average MPG)
+- [ ] Trip computer (distance, time, avg speed, fuel used)
+- [ ] Data logging to cloud (D1/R2)
+- [ ] Alert system (temperature, RPM, voltage thresholds)
+- [ ] Custom gauge dashboard (user-configurable)
+
+### Phase 3: Advanced Diagnostics
+- [ ] Mode 06 component test results (catalyst, O2 heater, EVAP, EGR)
+- [ ] Monitor ID decoding with pass/fail status
+- [ ] Min/max/current value display for each monitor
+- [ ] DTC history tracking (cloud-synced)
+- [ ] Repair cost estimates (crowdsourced)
+- [ ] Maintenance tracker (oil changes, filters, spark plugs)
+- [ ] Vehicle profile management (multiple cars)
+
+### Phase 4: Custom PIDs & Community
+- [ ] Custom PID creator (user-defined formulas)
+- [ ] Manufacturer-specific PID database (Ford Mode 22, GM Mode 22, Toyota Mode 21)
+- [ ] Community PID sharing (cloud-synced custom PIDs)
+- [ ] Report generation (PDF export)
+- [ ] Pre-purchase inspection checklist
+- [ ] Emissions test readiness report
+
+### Phase 5: Cloud Intelligence
+- [ ] DTC trend analysis (frequency, severity over time)
+- [ ] Predictive maintenance alerts
+- [ ] Recall notifications (VIN-based NHTSA API)
+- [ ] Nearby mechanic locator
+- [ ] Parts compatibility lookup
+- [ ] Service manual access (subscription)
+
+---
+
+## 🔧 COMMANDS REFERENCE
 
 ```bash
 # Local development
@@ -98,18 +163,42 @@ npm run build:web && npm run deploy:web  # Web app
 npm run release              # Tag and push current version
 ```
 
-## Quick Links
+---
 
-- **Live API**: `https://obd2free-worker.curtislamasters.workers.dev/api/health`
-- **GitHub**: `https://github.com/bangsmackpow/OBD2free`
-- **CI Runs**: `https://github.com/bangsmackpow/OBD2free/actions`
-- **Docs**: Browse `/docs` on the web app
+## 🔗 QUICK LINKS
 
-## Budget Status
+| Resource | URL |
+|----------|-----|
+| Live API | `https://obd2free-worker.curtislamasters.workers.dev/api/health` |
+| Web Dashboard | `https://obd2free.pages.dev` |
+| GitHub Repo | `https://github.com/bangsmackpow/OBD2free` |
+| CI Runs | `https://github.com/bangsmackpow/OBD2free/actions` |
+| OBDLink LX | `https://www.scantool.net/obdlink-lxbt/` |
+| V2-PRO Reference | `./V2-PRO.md` |
 
-| Item | Cost | Needed? |
-|------|------|---------|
-| OBDLink LX | $70 | Yes — for BLE testing |
-| Apple Developer | $99/yr | Only for real-device iOS |
-| Google Play | $25 | Only for Play Store release |
-| **Total** | **$194** | |
+---
+
+## 💰 BUDGET STATUS
+
+| Item | Cost | Priority | Status |
+|------|------|----------|--------|
+| OBDLink LX | $70 | HIGH | Not purchased |
+| Cloudflare (monthly) | ~$10/mo | — | Free tier active |
+| Apple Developer | $99/yr | LOW | Not needed yet |
+| Google Play | $25 | LOW | Not needed yet |
+| **Total** | **$204** | | **$0 spent** |
+
+---
+
+## 📊 HARDWARE COMPARISON SUMMARY
+
+| Tier | Device | Price | Capabilities |
+|------|--------|-------|--------------|
+| **Target** | OBDLink LX | $90 | Standard OBD-II (all 10 modes) |
+| Upgrade | ThinkDiag 2 | $90 | All-system + bidirectional (requires $40/yr sub) |
+| Pro | TOPDON Phoenix Nano | $560 | Full diagnostics, CAN-FD, DoIP |
+| Reference | Icon T8 | $400 | Professional scanner baseline |
+
+**Decision:** Stick with ELM327 (OBDLink LX) for V2 — maximizes ROI, covers 80% of use cases, open API for development.
+
+See [V2-PRO.md](./V2-PRO.md) for complete 5-tier hardware landscape and feature parity matrix.

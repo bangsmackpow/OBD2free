@@ -4,6 +4,25 @@
 
 Record, visualize, and analyze your vehicle's OBD2 data with a professional-grade tool that pairs with any BLE OBD2 adapter.
 
+## Hardware Target: ELM327 (OBDLink LX Recommended)
+
+OBD2Free maximizes the capabilities of standard ELM327 adapters, covering ~80% of what average users need:
+
+**Supported via ELM327:**
+- All 10 OBD-II modes (01-0A)
+- 90+ standard PIDs (RPM, speed, temps, fuel trims, O2 sensors, etc.)
+- DTC read/clear with descriptions (180+ codes)
+- Freeze frame, I/M readiness, vehicle info (VIN, CAL ID, CVN)
+- Mode 06 component tests (catalyst, O2 heater, EVAP, EGR)
+
+**Not supported (requires pro scanner):**
+- All-system diagnostics (ABS, SRS, transmission, BCM)
+- Bi-directional control, ECU coding, service resets
+
+**Recommended hardware:** OBDLink LX ($90) — fastest ELM327 implementation (~100 PIDs/sec), firmware updates, secure pairing.
+
+See [V2-PRO.md](./V2-PRO.md) for full hardware comparison and feature parity analysis vs professional scanners (Icon T8, Autel, Launch).
+
 ## Quick Start
 
 ```bash
@@ -172,25 +191,49 @@ Git tag `v*` triggers release workflow with signed APK.
 
 ## Documentation
 
-Docs are stored in Cloudflare R2 as markdown and served via the Worker API. Browse at `/docs` on the web app.
+Browse at `/docs` on the web app or read source files in `cloudflare/worker/docs/`:
 
-Available topics:
-- [Getting Started](./cloudflare/worker/docs/getting-started.md)
-- [User Guide](./cloudflare/worker/docs/user-guide.md)
-- [Technical Reference](./cloudflare/worker/docs/technical-reference.md) (includes full OBD2 PID table)
-- [Admin Guide](./cloudflare/worker/docs/admin-guide.md)
-- [Troubleshooting](./cloudflare/worker/docs/troubleshooting.md)
+- [Getting Started](./cloudflare/worker/docs/getting-started.md) — Install, connect OBD2 adapter, first session
+- [User Guide](./cloudflare/worker/docs/user-guide.md) — Dashboard, sessions, datalog viewer, premium features
+- [Technical Reference](./cloudflare/worker/docs/technical-reference.md) — API docs, JWT, CSV schema, full OBD2 PID table
+- [Admin Guide](./cloudflare/worker/docs/admin-guide.md) — User management, license control, system config
+- [Troubleshooting](./cloudflare/worker/docs/troubleshooting.md) — Connections, data, accounts, errors
+- [V2-PRO Hardware Reference](./V2-PRO.md) — Hardware comparison, feature parity, ELM327 maximization roadmap
 
 ## Key Features
 
+### OBD-II Diagnostics (ELM327)
+- **All 10 Modes**: 01 (live data), 02 (freeze frame), 03 (DTCs), 04 (clear), 05 (O2 tests), 06 (component tests), 07 (pending DTCs), 09 (vehicle info), 0A (permanent DTCs)
+- **90+ PIDs**: RPM, speed, coolant temp, fuel trims, O2 voltage/lambda, MAF, MAP, timing, throttle, EGR, EVAP, catalyst temp, battery voltage
+- **DTC Database**: 180+ codes with descriptions, causes, fixes, severity ratings
+- **Mode 06 Tests**: Catalyst efficiency, O2 heater, EVAP leak, EGR flow monitoring
+
+### Mobile App
 - **BLE OBD2 Connection**: Singleton BleManager, auto-reconnect, UART service discovery
-- **OBD2 Parsing**: 15+ standard PIDs, DTC read/clear, adaptive timing
-- **Session Recording**: CSV logging with GPS, auto-flush, cloud upload
+- **OBD2 Parsing**: ELM327 command queue, adaptive timing, ~100 PIDs/sec with OBDLink LX
+- **Session Recording**: CSV logging with GPS, auto-flush, cloud upload to R2
 - **Real-time Gauges**: SVG-based RPM, speed, temperature displays
-- **Web Dashboard**: shadcn/ui, dark/light theme, datalog viewer with charts
+- **Trip Computer**: Distance, time, average speed, fuel economy calculations
+
+### Web Dashboard
+- **Modern UI**: shadcn/ui, dark/light theme, responsive design
+- **Datalog Viewer**: Interactive charts with Recharts, data tables
+- **Session Management**: Pagination, search, CSV import/export
 - **Admin Panel**: User management, premium license controls, system stats
-- **Authentication**: JWT-based, password reset flow, device token registration
-- **Premium Tier**: Free/Premium/Lifetime license levels with feature gating
+- **Documentation Viewer**: Markdown rendering from R2
+
+### Cloud Backend (Cloudflare)
+- **Authentication**: JWT-based (HMAC-SHA256 via Web Crypto API), password reset flow
+- **Device Linking**: Device token registration for mobile app sync
+- **Premium Tiers**: Free/Premium/Lifetime license levels with feature gating
+- **D1 Database**: SQLite-based user/session/device storage
+- **R2 Storage**: CSV datalog files, documentation markdown
+- **KV Cache**: OBD2 PID caching, session metadata
+
+### CI/CD
+- **Automated Testing**: TypeScript, ESLint, Jest, Metro bundle, web build
+- **Multi-Platform Builds**: Android APK, iOS simulator artifacts
+- **Signed Releases**: Git tag triggers signed APK generation
 
 ## License
 
