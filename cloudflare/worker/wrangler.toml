@@ -23,6 +23,5 @@ binding = "CACHE"
 id = "057d99c6087e49889cd9e57a66364401"
 
 [vars]
-JWT_SECRET = "change-me-in-production-obd2free-2024"
 ADMIN_EMAIL = "admin@obd2free.com"
 ADMIN_PASSWORD = "changeme123"
