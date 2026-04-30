@@ -1,0 +1,24 @@
+{
+  "name": "obd2free-worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "types": "wrangler types",
+    "build": "wrangler deploy --dry-run",
+    "migrate": "wrangler d1 execute obd2free-db --file=migrations/0000_init.sql",
+    "seed": "wrangler d1 execute obd2free-db --file=migrations/seed.sql"
+  },
+  "dependencies": {
+    "hono": "^4.6.0",
+    "jose": "^5.9.0",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241230.0",
+    "wrangler": "^4.0.0",
+    "typescript": "^5.5.0",
+    "tsx": "^4.19.0"
+  }
+}

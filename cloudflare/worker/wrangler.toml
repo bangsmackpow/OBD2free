@@ -1,0 +1,28 @@
+name = "obd2free-worker"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+account_id = "0e528c886015cce349076fb7db222a88"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "obd2free-db"
+database_id = "76271565-7abd-44af-b3cc-f34130f2a7e4"
+
+[[r2_buckets]]
+binding = "LOGS_BUCKET"
+bucket_name = "obd2free-logs"
+
+[[r2_buckets]]
+binding = "DOCS_BUCKET"
+bucket_name = "obd2free-docs"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "057d99c6087e49889cd9e57a66364401"
+
+[vars]
+JWT_SECRET = "change-me-in-production-obd2free-2024"
+ADMIN_EMAIL = "admin@obd2free.com"
+ADMIN_PASSWORD = "changeme123"
