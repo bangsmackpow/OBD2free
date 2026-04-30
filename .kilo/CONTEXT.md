@@ -1,157 +1,109 @@
-# OBD2Free - Context for Continuation
+# OBD2Free — Context for Continuation
 
-## Quick Start for New Agent
+## Quick Start
 
-1. **Read this file first** - It contains everything needed to continue
-2. Review plan: `.kilo/plan.md` - Current implementation phase
-3. Review handoff: `.kilo/agents.md` - Detailed technical notes
-4. Original spec: `/Users/curtis/.local/share/kilo/plans/1777321534478-obd2free.md`
+1. **Read `NEXT_STEPS.md`** — Immediate actions
+2. **Read `STOPPING_POINT.md`** — What was done, what's left
+3. **Check CI**: `https://github.com/bangsmackpow/OBD2free/actions`
 
-## What's Working
+## Current State
 
-✅ TypeScript compiles without errors
-✅ All core services implemented (BLE, OBD2, DataLogger, GPS)
-✅ Dashboard UI shows live gauges when connected
-✅ Cloudflare Workers API ready (needs deployment)
-✅ Web dashboard skeleton ready
-✅ Tests passing (3/3)
+### ✅ Working
+- Full CI/CD pipeline passing (Tests, Android Build, iOS Build)
+- Cloudflare Worker deployed with auth, sessions, admin, docs APIs
+- D1 database migrated (users, sessions, devices, password_resets)
+- R2 buckets created (logs + docs) with docs content uploaded
+- JWT auth system (Web Crypto API, zero dependencies)
+- Web dashboard with shadcn/ui, login/register, admin panel, datalog viewer
+- Dark/light theme toggle
+- APK release workflow on git tags
 
-## What's Broken / Missing
+### 🔴 Needs Manual Setup
+- **Keystore + GitHub Secrets** — generate, encode, add to repo
+- **OBDLink LX** — purchase for BLE testing ($70)
+- **Password reset emails** — connect SendGrid/Resend
 
-⚠️ **Cannot build yet** - Missing native Android/iOS gradle/pod files
-⚠️ **Cannot test on device** - Need OBDLink LX hardware
-⚠️ **ESLint warnings** - 31 warnings (mostly `any` types and unused vars)
-⚠️ **Dashboard builder** - Not started
-⚠️ **In-app purchases** - Not started
+### 🟡 Not Started
+- Stripe payment integration
+- Session comparison (web charts)
+- GPS map view
+- Mobile dashboard builder
 
-## Next 5 Tasks (Priority Order)
+## Architecture
 
-1. **Generate native build files** (CRITICAL)
-   - Create `android/build.gradle` and `android/app/build.gradle`
-   - Create `ios/Podfile`
-   - Run `npx react-native init` alternative: copy from template
-   - Test: `cd android && ./gradlew assembleDebug`
+```
+Mobile App (RN) → BLE OBD2 Adapter → Local CSV + MMKV
+              → Cloudflare Worker API → D1 (metadata) + R2 (CSV files)
+Web Dashboard ← Cloudflare Worker API ← D1 + R2 + KV
+```
 
-2. **Deploy Cloudflare stack** (HIGH)
-   ```bash
-   cd cloudflare
-   npm install
-   wrangler login
-    wrangler d1 execute obd2free-db --file=./migrations/001_initial_schema.sql --remote
-   wrangler deploy
-   ```
+### Key Files
+| File | Purpose |
+|------|---------|
+| `cloudflare/worker/src/index.ts` | Worker entry point with route dispatching |
+| `cloudflare/worker/src/routes/auth.ts` | Register, login, forgot/reset password |
+| `cloudflare/worker/src/routes/admin.ts` | User CRUD, stats (admin only) |
+| `cloudflare/worker/src/routes/sessions.ts` | Session CRUD, CSV download |
+| `cloudflare/worker/src/routes/upload.ts` | CSV import (multipart + JSON) |
+| `cloudflare/worker/src/utils/jwt.ts` | JWT create/verify via Web Crypto API |
+| `cloudflare/worker/src/utils/password.ts` | PBKDF2 password hashing |
+| `cloudflare/worker/migrations/0000_init.sql` | D1 schema (4 tables + indexes) |
+| `web/src/App.tsx` | Web app entry with router |
+| `web/src/hooks/use-auth.tsx` | Auth context (login, register, logout) |
+| `web/src/layouts/RootLayout.tsx` | Sidebar nav + theme toggle |
+| `.github/workflows/release.yml` | Signed APK release on git tag |
 
-3. **Purchase OBDLink LX** (BLOCKER)
-   - Buy from: https://www.scantool.net/obdlink/lx/
-   - $70 + shipping
-   - Test with MazdaSpeed 3
+### Worker API Routes
+```
+POST /api/auth/register      POST /api/auth/login
+POST /api/auth/forgot-password   POST /api/auth/reset-password
+GET  /api/auth/me            POST /api/auth/refresh
+GET  /api/sessions           POST /api/sessions
+GET  /api/sessions/:id       DELETE /api/sessions/:id
+GET  /api/sessions/:id/data  POST /api/upload
+GET  /api/devices            POST /api/devices
+GET  /api/admin/users        PUT  /api/admin/users/:id
+GET  /api/admin/stats        GET  /api/docs/:slug
+```
 
-4. **Run on Physical Device** (HIGH)
-   - Connect OBDLink LX
-   - `npm run ios` or `npm run android`
-   - Scan for "OBDLink LX"
-   - Connect → Verify RPM/Speed display
+### Cloudflare Resources
+| Resource | ID/Name |
+|----------|---------|
+| Account ID | `0e528c886015cce349076fb7db222a88` |
+| D1 DB | `76271565-7abd-44af-b3cc-f34130f2a7e4` |
+| R2 Logs | `obd2free-logs` |
+| R2 Docs | `obd2free-docs` |
+| KV Cache | `057d99c6087e49889cd9e57a66364401` |
+| Worker | `obd2free-worker` at `obd2free-worker.curtislamasters.workers.dev` |
 
-5. **Fix ESLint Warnings** (MEDIUM)
-   - Replace `any` with proper types in GPSService, DataLogger
-   - Remove unused imports
-   - Configure pre-commit hook
+### Config Values
+- Admin email: `admin@obd2free.com`
+- Admin password: `changeme123` (**change immediately**)
+- JWT secret: `change-me-in-production-obd2free-2024` (**change in production**)
 
-## Architecture Decisions (Do NOT Change)
-
-- **BLE Library**: react-native-ble-plx v3.5.1 (fixed iOS 18 bug)
-- **Storage**: MMKV for local, R2 for cloud (CSV format)
-- **Backend**: Cloudflare Workers (no servers)
-- **Polling Rate**: 10Hz default (configurable up to 20Hz for MX)
-- **Command Throttling**: 50ms min delay (prevents ELM327 buffer overflow)
-- **Singleton Pattern**: BleService must remain singleton
-
-## Code Style Conventions
-
-- TypeScript strict mode enabled
-- 2-space indentation
-- Semicolons required
-- Components: PascalCase (`DashboardScreen`)
-- Services: `*Service.ts` suffix (`OBD2Service`)
-- Constants: `UPPER_SNAKE_CASE` in `src/constants/`
-- Colors: Defined in `src/constants/index.ts` as `COLORS.neon.*`
-
-## Testing Commands
+## Commands
 
 ```bash
-# Unit tests
-npm test
+# CI status
+gh run list --repo bangsmackpow/OBD2free --limit 5
 
-# Type checking
-npm run typecheck
+# Deploy worker
+cd cloudflare/worker && npm run deploy
 
-# Linting
-npm run lint
+# Build web
+cd web && npm run build
 
-# Build verification
-cd android && ./gradlew assembleDebug
+# TM check
+npm run typecheck && npm test && npm run lint
 ```
 
-## Common Gotchas
-
-1. **BLE scanning on Android 15+**: Requires `FOREGROUND_SERVICE_CONNECTED_DEVICE` permission (already in AndroidManifest.xml)
-2. **iOS background execution**: Max ~35 seconds when woken - batch uploads during foreground
-3. **ELM327 buffer overflow**: Never send commands faster than 50ms apart (enforced in OBD2Service)
-4. **R2 multipart**: Minimum 5MB parts - not an issue for logs <100MB
-5. **D1 row size**: 10MB limit - sessions metadata stays well under this
-
-## Environment Variables
-
-Create `.env` (not committed):
-```
-CLOUDFLARE_API_TOKEN=xxx
-CLOUDFLARE_ACCOUNT_ID=xxx
-CLOUDFLARE_D1_DATABASE_ID=xxx
-```
-
-## File to Edit Checklist
-
-- [ ] `android/build.gradle` - Create from React Native template
-- [ ] `android/app/build.gradle` - Create from template  
-- [ ] `ios/Podfile` - Generate with `pod init`
-- [ ] `README.md` - Update with build instructions
-- [ ] `IMPLEMENTATION_STATUS.md` - Mark Phase 1 complete
-
-## Validation Steps After Changes
-
-1. `npm run typecheck` → Must pass (0 errors)
-2. `npm test` → All tests pass
-3. `npm run lint` → 0 errors (warnings ok)
-4. Build Android: `cd android && ./gradlew assembleDebug` → APK generated
-5. Build iOS: `cd ios && pod install && xcodebuild` → .app builds
-6. Manual test with OBDLink LX → Live data appears on dashboard
-
-## Sign-Off Criteria for Phase 1 Complete
-
-- [x] TypeScript compiles cleanly
-- [x] All services implemented with proper error handling
-- [x] BLE connection flow works (theoretically, pending hardware)
-- [x] PID parsing validated with unit tests
-- [x] Data logger writes CSV to filesystem
-- [x] GPS integration complete
-- [x] Cloudflare Workers API routes defined
-- [x] Database schema finalized
-- [x] CI/CD pipeline configured
-- [ ] Native build files exist (TODO)
-- [ ] App runs on simulator/emulator (TODO)
-- [ ] Connects to real OBD2 adapter (TODO - needs hardware)
-
-## Getting Unstuck
-
-If you're stuck:
-1. Review `.kilo/agents.md` for detailed technical notes
-2. Check `IMPLEMENTATION_STATUS.md` for file inventory
-3. Re-read plan: `/Users/curtis/.local/share/kilo/plans/1777321534478-obd2free.md`
-4. Run tests to ensure nothing broke: `npm test`
+## Do NOT Change
+- BLE singleton pattern (BleService)
+- OBD2 PID parsing without validation data
+- Cloudflare Workers architecture (it's the backend)
+- JWT auth flow (it's zero-dependency and production-ready)
 
 ---
 
-**Created**: 2026-04-28
-**By**: Kilo Assistant
-**For**: Next agent/continuation
-**Status**: Phase 1 code complete, needs native build files + hardware test
+**Last Updated**: 2026-04-29
+**Next Agent**: Read NEXT_STEPS.md → Execute release workflow → Purchase OBDLink LX → Test mobile app

@@ -1,177 +1,143 @@
-# OBD2Free - Implementation Progress
+# OBD2Free — Implementation Status
 
-## Completed Components ✅
-
-### 1. Project Foundation
-- [x] React Native 0.73.4 + TypeScript project initialized
-- [x] Dependencies installed (BLE, MMKV, Reanimated, Navigation)
-- [x] ESLint + TypeScript config
-- [x] Git repository with .gitignore
-
-### 2. Core Services
-- [x] **BleService** (src/services/BleService.ts) - Singleton BLE manager
-  - Permission handling (Android BLUETOOTH_SCAN/CONNECT, iOS background modes)
-  - Service/characteristic discovery
-  - Command/response queue with throttling
-  - Event-based notifications
-
-- [x] **OBD2Service** (src/services/OBD2Service.ts) - ELM327 communication
-  - AT command initialization (adaptive timing, protocol auto-detect)
-  - PID query with standard parsing for 15+ parameters
-  - DTC read/clear (Mode 03/04)
-  - Manufacturer-specific commands (Mazda boost, BMW adaptations)
-  - Command queue with 50ms throttling
-
-- [x] **DataLogger** (src/services/DataLogger.ts)
-  - MMKV storage for session metadata
-  - CSV buffering with auto-flush (500 records or 5s)
-  - Session lifecycle management
-  - R2 upload with presigned URLs
-  - Automatic metrics calculation (distance, max/avg speed)
-  - Old session cleanup
-
-- [x] **GPSService** (src/services/GPSService.ts)
-  - High-accuracy tracking
-  - Location filtering by accuracy
-  - Speed conversion (m/s → km/h)
-
-### 3. React Context & State
-- [x] **BleContext** - Connection state, device discovery, engine data
-- [x] **SessionContext** - User profile, session management, premium gating
-
-### 4. Mobile UI
-- [x] **DashboardScreen** (src/screens/DashboardScreen.tsx)
-  - Real-time RPM & Speed gauges (SVG-based)
-  - Coolant temp, intake air temp, throttle, load, timing, fuel trims
-  - Connection status indicator
-  - Device scanner UI
-  - Disconnect control
-
-### 5. Navigation
-- [x] **AppNavigator** (src/navigation/AppNavigator.tsx)
-  - Tab navigation layout
-  - Placeholder screens for Sessions, Settings
-
-### 6. Native Configuration
-- [x] **AndroidManifest.xml**
-  - All required permissions (BLE 5.0+, location, foreground service)
-  - Android 15 FOREGROUND_SERVICE_CONNECTED_DEVICE
-  - Foreground service for background logging
-
-- [x] **Info.plist**
-  - Background Modes: bluetooth-central, location, processing
-  - NSLocationAlwaysAndWhenInUseUsageDescription
-  - NSBluetoothAlwaysUsageDescription
-
-### 7. Cloudflare Backend
-- [x] Worker API (cloudflare/worker/)
-  - `/api/sessions` (GET/POST)
-  - `/api/sessions/:id` (GET)
-  - `/api/sessions/:id/data` (stream CSV)
-  - `/api/upload/:sessionId` (direct CSV upload)
-  - `/api/auth/token` (mock auth)
-
-- [x] Database schema (cloudflare/migrations/001_initial_schema.sql)
-  - sessions table
-  - vehicles table
-  - users table
-  - indexes for performance
-
-- [x] Wrangler config with R2 + D1 bindings
-
-### 8. Web Dashboard
-- [x] Vite + React + Tailwind setup (web/)
-- [x] Session listing page with cards
-- [x] CSV download links
-- [x] Neon-themed styling
-
-### 9. CI/CD
-- [x] GitHub Actions workflow (.github/workflows/ci-cd.yml)
-  - Type check + lint + tests
-  - Android debug build
-  - iOS debug build
-  - Web build → Cloudflare Pages deployment
-
-### 10. Documentation
-- [x] README.md with architecture, setup, deployment
-- [x] Inline code comments where complex
-
-## Pending Tasks ⏳
-
-### High Priority
-- [ ] **GPS Integration with DataLogger** - Ensure GPSService streams to DataLogger correctly
-- [ ] **Testing on Physical Device** - Need OBDLink LX hardware to validate BLE comms
-- [ ] **Error Handling & Reconnection** - Handle BLE disconnects gracefully
-- [ ] **Android Build** - May need additional gradle config
-- [ ] **iOS Pod Install** - Requires CocoaPods setup
-
-### Medium Priority
-- [ ] **Dashboard Builder** - Drag-and-drop widget system (Phase 2)
-- [ ] **Premium Paywall** - UI + gating logic (Phase 3)
-- [ ] **Session Comparison** - Web charts with Recharts (Phase 3)
-- [ ] **Performance Metrics** - 0-60, quarter mile from GPS
-- [ ] **Background Service Implementation** - Android foreground service complete (already configured), iOS background fetch
-
-### Low Priority
-- [ ] **Manufacturer-specific Deep Diagnostics** (BMW coding, Mazda knock)
-- [ ] **Lap Timing with Sector Splits**
-- [ ] **Push Notifications** (Cloudflare Workers scheduled tasks)
-- [ ] **Web Dashboard Advanced Charts**
-- [ ] **App Store Assets** (icons, screenshots)
-- [ ] **Onboarding Tutorial**
-
-## Known Issues & Workarounds
-
-### BLE on Android 15+
-Requires `FOREGROUND_SERVICE_CONNECTED_DEVICE` permission (added to manifest)
-
-### ELM327 Buffer Overflow
-Command queue throttled to 50ms minimum delay between same PID. Fixed in OBD2Service.
-
-### iOS Background Scanning
-Requires service UUID in primary advertisement packet (not scanResponse). OBDLink LX advertises correctly.
-
-### R2 Multipart Upload
-Minimum 5MB parts. Currently uploading single-part files <5MB ~ acceptable for logs <100MB.
-
-## Quick Start for Development
-
-```bash
-# Install dependencies
-npm install
-
-# Run mobile app (requires Xcode/Android Studio)
-npm run ios      # or npm run android
-
-# Run in Expo Go (easier for testing without native build)
-npx expo start
-
-# Run Cloudflare worker (requires wrangler)
-cd cloudflare/worker
-npm install
-wrangler dev
-
-# Run web dashboard (development)
-cd web
-npm install
-npm run dev
-```
-
-## Next Steps
-
-1. Connect real OBD2 adapter and test BLE connection
-2. Validate PID responses on actual vehicle
-3. Implement session upload to R2
-4. Build dashboard builder module
-5. Add premium subscription UI with in-app purchases
-
-## File Count Summary
-- TypeScript/TSX: 22 files
-- Native configs: 4 files (AndroidManifest, Info.plist, etc.)
-- Cloudflare: 6 files (worker, routes, migrations)
-- Web: 4 files (entry, app, config)
-- Docs: 2 files (README, PROGRESS)
+> **Date**: 2026-04-29
+> **Phase**: 1 ✅ Complete | Phase 2 ✅ Complete | Phase 3 🔄 In Progress
+> **CI/CD**: All 3 jobs passing — Tests, Android Build, iOS Build
 
 ---
 
-Status: **Phase 1 Complete** - Core mobile app with BLE + OBD2 + logging ready for hardware testing.
+## ✅ Phase 1: Foundation (100%)
+
+### Core Services
+- [x] React Native 0.73.4 + TypeScript project
+- [x] BleService — singleton BLE manager, scanning, connection, UART discovery
+- [x] OBD2Service — ELM327 initialization, command queue, PID parser (15+ PIDs)
+- [x] DataLogger — MMKV storage, CSV buffering, session lifecycle
+- [x] GPSService — high-accuracy tracking, accuracy filtering
+- [x] Android permissions (BLUETOOTH_SCAN, CONNECT, FOREGROUND_SERVICE, Location)
+- [x] iOS capabilities (Background Modes: BLE + Location)
+- [x] DashboardScreen — real-time SVG gauges (RPM, speed, temps, trims)
+- [x] BleContext — connection state, device discovery, engine data
+- [x] SessionContext — user profile, session management, premium gating
+
+## ✅ Phase 2: Cloud & Web (100%)
+
+### Cloudflare Backend
+- [x] Worker deployed with auth, sessions, upload, admin, docs, devices routes
+- [x] D1 database migrated with 4 tables (users, sessions, devices, password_resets)
+- [x] R2 buckets created (obd2free-logs, obd2free-docs)
+- [x] KV namespace created (OBD2_CACHE)
+- [x] JWT auth system via Web Crypto API (HMAC-SHA256)
+- [x] Password hashing via PBKDF2 (100k iterations, SHA-256)
+- [x] Admin API — user CRUD, premium level control, stats
+- [x] Device token registration for mobile app linking
+- [x] First admin account auto-created on startup
+
+### Web Dashboard
+- [x] Vite + React + shadcn/ui + Tailwind CSS
+- [x] Dark/Light theme toggle
+- [x] Login, Register, Forgot Password pages
+- [x] Dashboard page with session stats
+- [x] Sessions list with pagination, search, CSV import
+- [x] Session Detail page — datalog viewer with charts + data table
+- [x] Admin panel — user management, edit role/premium/password
+- [x] Settings page — profile, password change, sign out
+- [x] Docs viewer — markdown from R2
+
+### Documentation
+- [x] README.md — full architecture, setup, deploy, API reference
+- [x] Getting Started — install, connect OBD2 adapter, first session
+- [x] User Guide — dashboard, sessions, datalog viewer, premium features
+- [x] Technical Reference — API docs, JWT, CSV schema, full OBD2 PID table
+- [x] Admin Guide — user management, license control, system config
+- [x] Troubleshooting — connections, data, accounts, errors
+
+## ✅ Phase 3: CI/CD & Releases (80%)
+
+### CI/CD Pipeline
+- [x] Tests & Type Check — tsc, eslint, jest, metro bundle, web build
+- [x] Android Build — `assembleDebug`, artifact uploaded
+- [x] iOS Build — simulator build, artifact uploaded
+- [x] All 3 jobs passing on every push to main
+
+### APK Release
+- [x] Release workflow on git tag `v*`
+- [x] Keystore decoding from GitHub Secrets
+- [x] `assembleRelease` with proper signing
+- [x] GitHub Release created with APK attached
+- [ ] User needs to: generate keystore, add secrets, push a tag
+
+---
+
+## ⏳ Remaining Work
+
+### High Priority
+- [ ] **Stripe integration** — payment portal for premium subscriptions
+- [ ] **Trigger a release** — generate keystore → add GitHub secrets → push tag
+- [ ] **Mobile app sync** — link BLE devices to user accounts via device tokens
+
+### Medium Priority
+- [ ] **Password reset emails** — connect Resend/SendGrid for actual email sending
+- [ ] **Dashboard builder** — drag-and-drop widget system for mobile
+- [ ] **Performance metrics** — 0-60, quarter mile from GPS data
+- [ ] **iOS real-device signing** — Apple Developer Program ($99/yr) + Fastlane
+- [ ] **Session comparison** — overlay multiple trips on web charts
+- [ ] **Map view** — GPS track overlay on session detail
+
+### Low Priority
+- [ ] **Push notifications** — Cloudflare Workers cron + webhook
+- [ ] **Manufacturer-specific PIDs** — Mazda boost, BMW adaptations
+- [ ] **App store assets** — icons, screenshots, descriptions
+- [ ] **Onboarding tutorial** — in-app walkthrough
+
+---
+
+## Known Issues
+
+| Issue | Status |
+|-------|--------|
+| ESLint `Unexpected any` warnings in BleService (event emitter) | Won't fix — necessary pattern |
+| iOS artifact path `ios/build/Build/Products/*.app` | ✅ Fixed |
+| Cloudflare Pages root directory bleeding root tsconfig | ✅ Fixed (installed RN tsconfig in web/) |
+| D1 docs bucket listing shows empty | ✅ Fixed (worker deployed with correct bindings) |
+
+---
+
+## Infrastructure
+
+| Resource | Name | Status |
+|----------|------|--------|
+| Cloudflare Account | curtislamasters@gmail.com | ✅ Active |
+| D1 Database | `obd2free-db` (id: `76271565-...`) | ✅ Deployed |
+| R2 Bucket (logs) | `obd2free-logs` | ✅ Created |
+| R2 Bucket (docs) | `obd2free-docs` | ✅ Created |
+| KV Namespace | `OBD2_CACHE` (id: `057d99c6...`) | ✅ Created |
+| Worker | `obd2free-worker` | ✅ Deployed |
+| Worker URL | `obd2free-worker.curtislamasters.workers.dev` | ✅ Live |
+| Pages Project | `obd2free-web` | ✅ Configured |
+
+---
+
+## Budget
+
+| Item | Cost | Status |
+|------|------|--------|
+| OBDLink LX | $70 | ❌ Not purchased |
+| Cloudflare (monthly) | ~$10/mo | ✅ Free tier for now |
+| Apple Developer | $99/yr | ❌ Not needed yet |
+| Google Play | $25 | ❌ Not needed yet |
+| **Total** | **~$204** | **$0 spent** |
+
+---
+
+## File Count
+
+| Category | Files |
+|----------|-------|
+| TypeScript/TSX (mobile) | 22 |
+| TypeScript/TSX (web) | 25 |
+| TypeScript (worker) | 15 |
+| Configuration | 12 |
+| Documentation | 12 |
+| CI/CD workflows | 2 |
+| **Total** | **~88** |

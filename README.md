@@ -1,242 +1,197 @@
-# OBD2Free - OBD2 Reader Application
+# OBD2Free
 
-Cross-platform OBD2 reader for Android, iOS, and web with custom dashboards, datalogging, and performance analytics.
+**Cross-platform OBD2 datalogging platform — Android, iOS, Web**
+
+Record, visualize, and analyze your vehicle's OBD2 data with a professional-grade tool that pairs with any BLE OBD2 adapter.
+
+## Quick Start
+
+```bash
+npm install
+# iOS: cd ios && pod install
+npm run ios       # or npm run android
+```
+
+## Architecture
+
+```
+┌──────────────────┐     ┌──────────────────┐     ┌──────────────┐
+│  Mobile App       │────▶│  Cloudflare API  │────▶│  D1 (SQLite) │
+│  (React Native)   │     │  (Worker)        │     │  + R2 (CSV)  │
+└──────────────────┘     └──────────────────┘     └──────────────┘
+         │                                                    │
+         ▼                                                    ▼
+┌──────────────────┐                              ┌──────────────────┐
+│  OBD2 Adapter    │                              │  Web Dashboard   │
+│  (BLE)           │                              │  (Vite + React)  │
+└──────────────────┘                              └──────────────────┘
+```
+
+Two Cloudflare deployments:
+- **Worker** — REST API (auth, sessions, uploads, admin, docs)
+- **Pages** — Web dashboard app
 
 ## Tech Stack
 
-- **Mobile**: React Native 0.73+ with TypeScript
-- **BLE**: react-native-ble-plx (v3.5.1+)
-- **Storage**: MMKV (local), Cloudflare R2 (cloud)
-- **Backend**: Cloudflare Workers + D1 + R2
-- **Web**: React + Vite + Tailwind CSS
-- **Analytics**: Recharts (web), react-native-svg (mobile)
+| Layer | Technology |
+|-------|-----------|
+| Mobile Framework | React Native 0.73.4 + TypeScript |
+| BLE | react-native-ble-plx v3.5.1 |
+| Local Storage | MMKV |
+| Charts (mobile) | react-native-svg |
+| API Backend | Cloudflare Workers (Hono-style, raw Web Crypto) |
+| Database | Cloudflare D1 (SQLite) |
+| File Storage | Cloudflare R2 |
+| Cache | Cloudflare KV |
+| Web UI | React + Vite + shadcn/ui + Tailwind CSS |
+| Charts (web) | Recharts |
+| Auth | JWT (HMAC-SHA256 via Web Crypto API) |
+| CI/CD | GitHub Actions |
+| Password Hashing | PBKDF2 (100k iterations, SHA-256) |
 
 ## Project Structure
 
 ```
 obd2free/
-├── src/
-│   ├── components/       # Reusable UI components
-│   ├── contexts/         # React contexts (BleContext, SessionContext)
-│   ├── hooks/            # Custom React hooks
-│   ├── navigation/       # React Navigation setup
-│   ├── screens/          # App screens (Dashboard, Sessions, etc.)
-│   ├── services/         # Core business logic
-│   │   ├── BleService.ts        # BLE singleton manager
-│   │   ├── OBD2Service.ts       # ELM327 command queue & PID parser
-│   │   ├── DataLogger.ts        # CSV logging + R2 upload
-│   │   └── GPSService.ts        # Location tracking
-│   ├── types/            # TypeScript interfaces
-│   └── constants/        # App config, OBD2 PIDs, colors
-├── android/              # Android native code
-├── ios/                  # iOS native code
+├── src/                      # Mobile app source
+│   ├── components/           # Reusable UI components
+│   ├── contexts/             # React contexts (BleContext, SessionContext)
+│   ├── navigation/           # React Navigation setup
+│   ├── screens/              # App screens
+│   ├── services/             # Core business logic
+│   │   ├── BleService.ts     # BLE singleton manager
+│   │   ├── OBD2Service.ts    # ELM327 command queue & PID parser
+│   │   ├── DataLogger.ts     # CSV logging + session management
+│   │   └── GPSService.ts     # Location tracking
+│   ├── types/                # TypeScript interfaces
+│   └── constants/            # OBD2 PIDs, config, colors
+├── android/                  # Android native build files
+├── ios/                      # iOS native files
 ├── cloudflare/
-│   ├── worker/           # Cloudflare Workers API
-│   │   ├── index.ts
-│   │   ├── context.ts
-│   │   └── routes/
-│   ├── migrations/       # D1 SQL migrations
-│   └── wrangler.toml     # Cloudflare config
-├── web/                  # Web dashboard (Cloudflare Pages)
-└── .github/
-    └── workflows/
-        └── ci-cd.yml    # CI/CD pipeline
+│   ├── worker/               # Cloudflare Workers API
+│   │   ├── src/
+│   │   │   ├── index.ts      # Entry point
+│   │   │   ├── routes/       # auth, sessions, upload, admin, docs, devices
+│   │   │   ├── middleware/   # JWT auth, setup
+│   │   │   └── utils/        # JWT, password hashing
+│   │   ├── migrations/       # D1 SQL migrations
+│   │   └── docs/             # Documentation markdown source
+│   └── wrangler.toml         # Cloudflare config
+├── web/                      # Web dashboard
+│   ├── src/
+│   │   ├── pages/            # auth, dashboard, sessions, admin, settings, docs
+│   │   ├── components/ui/    # shadcn/ui base components
+│   │   ├── hooks/            # Auth context
+│   │   ├── layouts/          # Root layout with sidebar nav
+│   │   └── lib/              # cn utility, formatters
+│   └── vite.config.ts        # Vite config
+└── .github/workflows/
+    ├── ci-cd.yml             # CI/CD pipeline
+    └── release.yml           # Signed APK release workflow
 ```
 
-## Quick Start
+## API Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/auth/register` | — | Create account |
+| POST | `/api/auth/login` | — | Login (returns JWT) |
+| POST | `/api/auth/forgot-password` | — | Initiate password reset |
+| POST | `/api/auth/reset-password` | — | Complete password reset |
+| GET | `/api/auth/me` | JWT | Current user profile |
+| POST | `/api/auth/refresh` | JWT | Refresh JWT token |
+| GET | `/api/sessions` | JWT | List sessions (paginated) |
+| POST | `/api/sessions` | JWT | Create session |
+| GET | `/api/sessions/:id` | JWT | Session detail |
+| DELETE | `/api/sessions/:id` | JWT | Delete session + CSV |
+| GET | `/api/sessions/:id/data` | JWT | Download CSV |
+| POST | `/api/upload` | JWT | Upload CSV file |
+| GET | `/api/devices` | JWT | List devices |
+| POST | `/api/devices` | JWT | Register device token |
+| GET | `/api/admin/users` | Admin | List users |
+| PUT | `/api/admin/users/:id` | Admin | Update user (role, premium, password) |
+| GET | `/api/admin/stats` | Admin | System statistics |
+| GET | `/api/docs/:slug` | — | Documentation page |
+
+## Environment Setup
 
 ### Prerequisites
-- Node.js 18+
-- React Native CLI (`npm install -g react-native-cli`)
-- Xcode (iOS development)
-- Android Studio (Android development)
-- OBDLink LX or compatible ELM327 BLE adapter
-
-### Mobile App Setup
-
-1. **Install dependencies**
 ```bash
+node --version  # 18+
+npm install -g wrangler  # Cloudflare CLI
+```
+
+### Local Development
+```bash
+# Mobile app
 npm install
+npm run ios        # iOS simulator
+npm run android    # Android emulator
+
+# Web dashboard
+cd web && npm install && npm run dev
+
+# Cloudflare worker
+cd cloudflare/worker && npm run dev
 ```
 
-2. **Configure permissions**
-- Android: Edit `android/app/src/main/AndroidManifest.xml` (already configured)
-- iOS: Edit `ios/OBD2Free/Info.plist` (already configured)
-
-3. **iOS Pod install**
+### Cloudflare Deploy
 ```bash
-cd ios && pod install && cd ..
+# Worker
+cd cloudflare/worker
+npm run deploy
+
+# Web app
+npm run build:web
+npm run deploy:web
 ```
 
-4. **Run on device/simulator**
+### APK Release
 ```bash
-# iOS
-npm run ios
-
-# Android
-npm run android
+npm run release  # tags current version and pushes
 ```
+Requires GitHub Secrets: `REPO_KEYSTORE`, `REPO_KEYSTORE_PASS`, `REPO_KEY_ALIAS`, `REPO_KEY_PASS`
+Generate keystore: `keytool -genkeypair -v -keystore obd2free-release.keystore -alias obd2free -keyalg RSA -keysize 2048 -validity 10000`
 
-### Cloudflare Backend Setup
+## Environment Variables (Worker)
 
-1. **Create Cloudflare account** and install Wrangler CLI:
-```bash
-npm install -g wrangler
-wrangler login
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `JWT_SECRET` | `change-me-in-production...` | HMAC signing key for JWTs |
+| `ADMIN_EMAIL` | `admin@obd2free.com` | First admin account email |
+| `ADMIN_PASSWORD` | `changeme123` | First admin account password (CHANGE ME) |
 
-2. **Create R2 bucket**:
-```bash
-wrangler r2 bucket create obd2free-logs
-```
+## CI/CD
 
-3. **Create D1 database**:
-```bash
-wrangler d1 create obd2free-db
-```
+GitHub Actions on push to `main`:
+1. **Tests & Type Check** — tsc, eslint, jest, metro bundle, web build
+2. **Android Build** — `./gradlew assembleDebug` + artifact upload
+3. **iOS Build** — `xcodebuild` for simulator + artifact upload
 
-4. **Update `cloudflare/wrangler.toml`** with your database ID.
+Git tag `v*` triggers release workflow with signed APK.
 
-5. **Apply migrations**:
-```bash
-cd cloudflare
-wrangler d1 execute obd2free-db --file=./migrations/001_initial_schema.sql --remote
-```
+## Documentation
 
-6. **Deploy worker**:
-```bash
-wrangler deploy
-```
+Docs are stored in Cloudflare R2 as markdown and served via the Worker API. Browse at `/docs` on the web app.
 
-### Web Dashboard Setup
+Available topics:
+- [Getting Started](./cloudflare/worker/docs/getting-started.md)
+- [User Guide](./cloudflare/worker/docs/user-guide.md)
+- [Technical Reference](./cloudflare/worker/docs/technical-reference.md) (includes full OBD2 PID table)
+- [Admin Guide](./cloudflare/worker/docs/admin-guide.md)
+- [Troubleshooting](./cloudflare/worker/docs/troubleshooting.md)
 
-```bash
-cd web
-npm install
-npm run dev  # development
-npm run build  # production build
-```
+## Key Features
 
-Deploy to Cloudflare Pages:
-```bash
-wrangler pages deploy web/dist --project-name obd2free-web
-```
-
-## Architecture Highlights
-
-### BLE Communication
-- Singleton `BleManager` pattern prevents memory leaks
-- Background scanning with service UUID filtering (iOS)
-- Foreground service required for Android 15+ background logging
-- Automatic protocol detection (AT SP 0)
-
-### OBD2 Data Pipeline
-1. **Scan** for BLE OBD2 adapters
-2. **Connect** via react-native-ble-plx
-3. **Initialize** ELM327 with adaptive timing (AT AT1)
-4. **Poll** configured PIDs with throttled command queue (50ms min delay)
-5. **Parse** responses into typed `EngineData` objects
-6. **Cache** in MMKV for instant UI updates
-7. **Log** to CSV buffer (flushed every 500 records or 5s)
-8. **Upload** to R2 when on WiFi or session ends
-
-### Datalogging
-- Circular MMKV buffer (last 10,000 readings)
-- Automatic CSV chunking (500 records each)
-- GPS integration for track mapping
-- Session metadata in D1, logs in R2
-
-## Features
-
-### Phase 1 (Complete)
-- BLE device scanning & connection
-- Real-time RPM, speed, coolant temp
-- DTC reading/clearing
-- Local CSV datalogging
-
-### Phase 2 (In Progress)
-- Custom dashboard builder
-- Background GPS tracking
-- Cloud R2 upload
-- Session management
-
-### Phase 3 (Planned)
-- Web dashboard with analytics
-- Lap timing & performance metrics
-- MazdaSpeed 3 & BMW F10 enhanced PIDs
-- Premium paywall
-
-## Configuration
-
-### OBD2 PIDs
-Standard PIDs defined in `src/constants/index.ts`: OBD2PID enum
-
-### Polling Rate
-Default: 10Hz (100ms)
-- Fast PIDs (RPM, speed): every cycle
-- Slow PIDs (temps): every 5 cycles
-
-Control via `OBD2_CONFIG.DEFAULT_POLL_RATE`
-
-Premium unlocks 20Hz mode for OBDLink MX.
-
-## Testing
-
-### With OBDLink LX
-1. Plug adapter into vehicle OBD2 port
-2. Power on ignition
-3. Run app → Scan → "OBDLink LX"
-4. Connect → Dashboard shows live data
-
-### Mock Testing
-```bash
-# Use react-native-ble-plx-mock
-npm test
-```
-
-## Deployment
-
-### CI/CD (GitHub Actions)
-- Push to `main` triggers:
-  - Type check & lint
-  - Unit tests with coverage
-  - Android debug APK build
-  - iOS debug build
-  - Web build → Cloudflare Pages deployment
-
-### Manual Deployment
-```bash
-# Android release
-cd android && ./gradlew assembleRelease
-
-# iOS archive
-xcodebuild -workspace OBD2Free.xcworkspace -scheme OBD2Free -configuration Release
-
-# Web
-cd web && npm run build && wrangler pages deploy dist
-```
-
-## Troubleshooting
-
-### BLE won't scan (iOS)
-- Ensure "Bluetooth" permission in Info.plist
-- Background Modes → "Uses Bluetooth LE Accessories" enabled
-- Adapter must include service UUID in advertisement
-
-### BLE connection fails (Android)
-- Verify BLUETOOTH_SCAN and BLUETOOTH_CONNECT permissions granted
-- Android 15+: Add FOREGROUND_SERVICE_CONNECTED_DEVICE
-- Some devices require location services enabled
-
-### ELM327 no response
-- Check OBD2 adapter power (some draw too much from port)
-- Try AT SP 0 (auto protocol) manually
-- Ensure ELM327 firmware is latest
+- **BLE OBD2 Connection**: Singleton BleManager, auto-reconnect, UART service discovery
+- **OBD2 Parsing**: 15+ standard PIDs, DTC read/clear, adaptive timing
+- **Session Recording**: CSV logging with GPS, auto-flush, cloud upload
+- **Real-time Gauges**: SVG-based RPM, speed, temperature displays
+- **Web Dashboard**: shadcn/ui, dark/light theme, datalog viewer with charts
+- **Admin Panel**: User management, premium license controls, system stats
+- **Authentication**: JWT-based, password reset flow, device token registration
+- **Premium Tier**: Free/Premium/Lifetime license levels with feature gating
 
 ## License
 
 MIT
-
-## Support
-
-Report issues: https://github.com/obd2free/obd2-reader/issues
