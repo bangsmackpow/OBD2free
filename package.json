@@ -15,7 +15,8 @@
     "build:web": "cd web && npm run build",
     "build:worker": "cd cloudflare/worker && npm run build:worker",
     "deploy:worker": "cd cloudflare/worker && wrangler deploy",
-    "deploy:web": "wrangler pages deploy web/dist --project-name obd2free-web"
+    "deploy:web": "wrangler pages deploy web/dist --project-name obd2free-web",
+    "release": "git tag v$(node -p \"require('./package.json').version\") && git push origin --tags"
   },
   "dependencies": {
     "@react-navigation/bottom-tabs": "^6.5.20",
