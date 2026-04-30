@@ -7,6 +7,11 @@ export async function handleAuth(request: Request, env: Env): Promise<Response> 
   const url = new URL(request.url);
   const path = url.pathname;
 
+  // GET /api/auth/me - special case (doesn't require POST)
+  if (request.method === "GET" && path === "/api/auth/me") {
+    return getMe(request, env);
+  }
+
   if (request.method !== "POST") {
     return jsonResponse({ error: "Method not allowed" }, 405);
   }
@@ -22,8 +27,6 @@ export async function handleAuth(request: Request, env: Env): Promise<Response> 
       return forgotPassword(request, env);
     case "/api/auth/reset-password":
       return resetPassword(request, env);
-    case "/api/auth/me":
-      return getMe(request, env);
     default:
       return jsonResponse({ error: "Not found" }, 404);
   }
